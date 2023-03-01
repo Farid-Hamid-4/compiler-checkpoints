@@ -1,8 +1,0 @@
-jflex tiny.flex
-Reading "tiny.flex"
-
-Error in file "tiny.flex" (line 92): 
-Macros in character classes are not supported.
-id = [_{letter}][_{alphanumeric}]*
-       ^
-1 error, 0 warnings.
