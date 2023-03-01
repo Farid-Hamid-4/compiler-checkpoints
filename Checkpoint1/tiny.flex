@@ -84,6 +84,8 @@ letter = [a-zA-Z]
 id = [_a-zA-Z][_a-zA-Z0-9]*
 truth = false|true
 
+comments = (\/\*)(.|[\r\n])*?(\*\/)
+
 %%
 /* ------------------------Lexical Rules Section---------------------- */
    
@@ -124,7 +126,7 @@ truth = false|true
 "}"                        { return symbol(sym.RBRACE); }
 {truth}                    { return symbol(sym.TRUTH); }
 {id}                       { return symbol(sym.ID, yytext()); }
-{number}                   { return symbol(sym.NUM, yytext()); }
+{number}                   { return symbol(sym.NUM, Integer.parseInt(yytext())); }
 {WhiteSpace}+              { /* skip whitespace */ }   
-(\/\*)(.|[\r\n])*?(\*\/)   { /* skip comments */ }
-.                          { System.err.println("Error: Invalid characters - " + yytext() + " on line - " + yyline()); return symbol(sym.ERROR); }
+{comments}                 { /* skip comments */ }
+.                          { return symbol(sym.ERROR); }

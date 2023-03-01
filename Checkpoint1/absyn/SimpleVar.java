@@ -3,8 +3,9 @@ package absyn;
 public class SimpleVar extends Var {
     public String name;
 
-    public SimpleVar ( int pos, String name ) {
-        this.pos = pos;
+    public SimpleVar ( int row, int col, String name ) {
+        this.row = row;
+        this.col = col;
         this.name = name;
     }
 

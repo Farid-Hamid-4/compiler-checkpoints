@@ -7,8 +7,9 @@ abstract public class NameTy extends Absyn {
 
     public int typ;
 
-    public NameTy( int pos, int typ ) {
-        this.pos = pos;
+    public NameTy( int row, int col, int typ ) {
+        this.row = row;
+        this.col = col;
         this.typ = typ;
     }
 
