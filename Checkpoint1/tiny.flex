@@ -79,8 +79,6 @@ digit = [0-9]
 number = {digit}+
    
 /* A identifier integer is a word beginning a letter between A and Z, a and z, or an underscore followed by zero or more letters between A and Z, a and z, zero and nine, or an underscore. */
-letter = [a-zA-Z]
-// identifier = [a-zA-Z]+
 id = [_a-zA-Z][_a-zA-Z0-9]*
 truth = false|true
 
@@ -103,28 +101,27 @@ comments = (\/\*)(.|[\r\n])*?(\*\/)
 "void"                     { return symbol(sym.VOID); }
 "+"                        { return symbol(sym.PLUS); }
 "-"                        { return symbol(sym.MINUS); }
-"*"                        { return symbol(sym.MUL); }
-"/"                        { return symbol(sym.DIV); }
+"*"                        { return symbol(sym.TIMES); }
+"/"                        { return symbol(sym.OVER); }
 "<"                        { return symbol(sym.LT); }
 "<="                       { return symbol(sym.LE); }
 ">"                        { return symbol(sym.GT); }
 ">="                       { return symbol(sym.GE); }
 "=="                       { return symbol(sym.EQ); }
 "!="                       { return symbol(sym.NE); }
-"!"                        { return symbol(sym.NOT); }
-"~"                        { return symbol(sym.TILDA); }
+"~"                        { return symbol(sym.NOT); }
 "||"                       { return symbol(sym.OR); }
 "&&"                       { return symbol(sym.AND); }
 "="                        { return symbol(sym.ASSIGN); }
 ";"                        { return symbol(sym.SEMI); }
-","                        { return symbol(sym.COMMMA); }
+","                        { return symbol(sym.COMMA); }
 "("                        { return symbol(sym.LPAREN); }
 ")"                        { return symbol(sym.RPAREN); }
 "["                        { return symbol(sym.LBRACKET); }
 "]"                        { return symbol(sym.RBRACKET); }
 "{"                        { return symbol(sym.LBRACE); }
 "}"                        { return symbol(sym.RBRACE); }
-{truth}                    { return symbol(sym.TRUTH); }
+{truth}                    { return symbol(sym.TRUTH, Boolean.parseBoolean(yytext())); }
 {id}                       { return symbol(sym.ID, yytext()); }
 {number}                   { return symbol(sym.NUM, Integer.parseInt(yytext())); }
 {WhiteSpace}+              { /* skip whitespace */ }   

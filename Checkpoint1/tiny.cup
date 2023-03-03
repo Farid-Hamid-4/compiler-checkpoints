@@ -71,7 +71,7 @@ parser code {:
 
 /* ------------Declaration of Terminals and Non Terminals Section----------- */
    
-terminal IF, ELSE, WHILE, INT, VOID, BOOL, RETURN;
+terminal ELSE, IF, WHILE, INT, VOID, RETURN, BOOL;
 terminal PLUS, MINUS, TIMES, OVER, LT, LE, GT, GE, EQ, NE, NOT, OR, AND, ASSIGN, SEMI, COMMA, UMINUS;
 terminal LPAREN, RPAREN, LBRACKET, RBRACKET, LBRACE, RBRACE;
 terminal String ID, NUM, TRUTH;
@@ -186,7 +186,7 @@ statementList ::= statementList:sl statement:s
                         RESULT = sl;
                      :}
                   |  statement:s
-                     {: RESULT = new ExpList(s,null); :}
+                     {: RESULT = new ExpList(s, null); :}
                 ;
 
 statement ::= expressionStatement:es
