@@ -20,8 +20,8 @@ Lexer.java: tiny.flex
 	$(JFLEX) tiny.flex
 
 parser.java: tiny.cup
-	#$(CUP) -dump -expect 3 tiny.cup
-	$(CUP) -expect 3 tiny.cup
+	#$(CUP) -dump -expect 10 tiny.cup
+	$(CUP) -expect 10 tiny.cup
 
 clean:
 	rm -f parser.java Lexer.java sym.java *.class absyn/*.class *~

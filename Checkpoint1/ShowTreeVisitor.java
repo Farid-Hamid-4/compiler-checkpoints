@@ -10,12 +10,10 @@ public class ShowTreeVisitor implements AbsynVisitor {
     
     public void visit( ArrayDec exp, int level ) {
         indent( level );
-        if( exp.typ.typ == 0 )
-            System.out.println( "ArrayDec: BOOL " + exp.name + "[" + exp.size + "]" );
-        else if ( exp.typ.typ == 1 )
+        if ( exp.typ.typ == 1  && exp.size != 0 ) {
+            level++;
             System.out.println( "ArrayDec: INT " + exp.name + "[" + exp.size + "]" );
-        else if ( exp.typ.typ == 2 )
-            System.out.println( "ArrayDec: VOID " + exp.name + "[" + exp.size + "]" );
+        }
     }
 
     public void visit ( AssignExp exp, int level ) {
@@ -28,6 +26,7 @@ public class ShowTreeVisitor implements AbsynVisitor {
 
     public void visit ( BoolExp exp, int level ) {
         indent( level );
+        level++;
         System.out.println( "BoolExp: " + exp.value );
     }
 
@@ -75,11 +74,11 @@ public class ShowTreeVisitor implements AbsynVisitor {
     public void visit ( FunctionDec exp, int level ) {
         indent( level );
         if( exp.result.typ == 0 )
-            System.out.println( "FunctionDec: " + exp.result + " BOOL" );
+            System.out.println( "FunctionDec: BOOL " + exp.result );
         else if ( exp.result.typ == 1 )
-            System.out.println( "FunctionDec: " + exp.result + " INT" );
+            System.out.println( "FunctionDec: INT " + exp.result );
         else if ( exp.result.typ == 2 )
-            System.out.println( "FunctionDec: " + exp.result + " VOID" );
+            System.out.println( "FunctionDec: VOID " + exp.result );
         level++;
         VarDecList varDecList = exp.params;
         while( varDecList != null ) {
@@ -121,7 +120,7 @@ public class ShowTreeVisitor implements AbsynVisitor {
         else if ( exp.typ == 2 ) 
             System.out.println( "NameTy: VOID" );
     }
-
+    
     public void visit ( NilExp exp, int level ) {
         indent( level );
         System.out.println( "NilExp:" );
@@ -129,7 +128,7 @@ public class ShowTreeVisitor implements AbsynVisitor {
 
     public void visit ( OpExp exp, int level ) {
         indent( level );
-        System.out.print( "OpExp:" ); 
+        System.out.println( "OpExp:" ); 
         switch( exp.op ) {
             case OpExp.PLUS:
                 System.out.println( " + " );
@@ -140,10 +139,10 @@ public class ShowTreeVisitor implements AbsynVisitor {
             case OpExp.UMINUS:
                 System.out.println( " - " );
                 break;
-            case OpExp.MUL:
+            case OpExp.TIMES:
                 System.out.println( " * " );
                 break;
-            case OpExp.DIV:
+            case OpExp.OVER:
                 System.out.println( " / " );
                 break;
             case OpExp.EQ:
@@ -165,7 +164,7 @@ public class ShowTreeVisitor implements AbsynVisitor {
                 System.out.println( " >= " );
                 break;
             case OpExp.NOT:
-                System.out.println( " ! " );
+                System.out.println( " ~ " );
                 break;
             case OpExp.AND:
                 System.out.println( " && " );
@@ -174,7 +173,7 @@ public class ShowTreeVisitor implements AbsynVisitor {
                 System.out.println( " || " );
                 break;
             default:
-                System.out.println( "Unrecognized operator at " + exp.pos );
+                System.out.println( "Unrecognized operator at line " + exp.row + " and column " + exp.col );
         }
         level++;
         if ( exp.left != null )
