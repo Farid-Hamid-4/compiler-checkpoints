@@ -91,9 +91,9 @@ precedence nonassoc AND, OR;
 precedence nonassoc LT, GT, LE, GE, NE, EQ;
 precedence left PLUS, MINUS;
 precedence left TIMES, OVER;
-precedence right UMINUS, NOT;
-precedence left COMMA, ELSE;
-
+precedence left UMINUS, NOT;
+precedence left COMMA;
+precedence left ELSE,SEMI,ID;
 /* ----------------------------Grammar Section-------------------- */
 
 start with program;
@@ -206,11 +206,11 @@ expressionStatement ::= expression:e SEMI
                       | SEMI
                       ;
 
-selectionStatement ::= IF:i LPAREN expression:e RPAREN statement:s
-                        {: RESULT = new IfExp(ileft, iright, e, s, null); :}
-                     | IF:i LPAREN expression:e RPAREN statement:s1 ELSE statement:s2
-                        {: RESULT = new IfExp(ileft, iright, e, s1, s2); :}
-                     ;
+selectionStatement  ::= IF:i LPAREN expression:e RPAREN statement:s
+                           {: RESULT = new IfExp(ileft, iright, e, s, new NilExp(ileft, iright)); :}
+                      | IF:i LPAREN expression:e RPAREN statement:m ELSE statement:u
+                           {: RESULT = new IfExp(ileft, iright, e, m, u); :}
+                      ;
 
 iterationStatement ::= WHILE:w LPAREN expression:e RPAREN statement:s
                         {: RESULT = new WhileExp(wleft, wright, e, s); :}
