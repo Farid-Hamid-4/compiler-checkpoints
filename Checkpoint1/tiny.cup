@@ -98,121 +98,177 @@ precedence left ELSE,SEMI,ID;
 
 start with program;
 
-// Program is the start variable 
-program ::= decList:dl
-            {: RESULT = dl; :}
-          ;
+program  ::= decList:dl
+         {: RESULT = dl; :}
+         ;
 
-// DecList obtains instances of declaration
-decList ::= decList:dl dec:d
-            {: DecList t = dl;
-               while ( t.tail != null )
-                  t = t.tail;
-               t.tail = new DecList(d, null);
-               RESULT = dl;
-            :}
-          | dec:d
-            {: RESULT = new DecList(d, null); :}
-          ;
+decList  ::= decList:dl dec:d
+         {: DecList t = dl;
+            while ( t.tail != null )
+               t = t.tail;
+            t.tail = new DecList(d, null);
+            RESULT = dl;
+         :}
+         | dec:d
+         {: RESULT = new DecList(d, null); :}
+         ;
 
-dec ::= varDeclaration:vd
-         {: RESULT = vd; :}
+dec   ::= varDeclaration:vd
+      {: RESULT = vd; :}
       | funDeclaration:fd
+      {: RESULT = fd; :}
       | funPrototype:fp
+      {: RESULT = fp; :}
       ;
 
 varDeclaration ::= typeSpecifier:ts ID:id SEMI
-                     {: RESULT = new SimpleDec(tsleft, tsright, ts, id); :}
-                 | typeSpecifier:ts ID:id LBRACKET NUM:n RBRACKET SEMI
-                     {: RESULT = new ArrayDec(tsleft, tsright, ts, id); :}
-                 ;
-
-typeSpecifier ::= BOOL:b
-                | INT:i
-                  {: RESULT = new NameTy(ileft, iright, NameTy.INT); :}
-                | VOID:v
-                ;
-
-funDeclaration ::= typeSpecifier:ts ID:id LPAREN params:ps RPAREN compoundStatement:cs
-                 ;
-
-funPrototype ::= typeSpecifier:ts ID:id LPAREN params:ps RPAREN SEMI
+               {: RESULT = new SimpleDec(tsleft, tsright, ts, id); :}
+               | typeSpecifier:ts ID:id LBRACKET NUM:n RBRACKET SEMI
+               {: RESULT = new ArrayDec(tsleft, tsright, ts, id, Integer.parseInt(n)); :}
                ;
 
-params ::= paramList:pl
+typeSpecifier  ::= BOOL:b
+               {: RESULT = new NameTy(bleft, bright, NameTy.BOOL); :}
+               | INT:i
+               {: RESULT = new NameTy(ileft, iright, NameTy.INT); :}
+               | VOID:v
+               {: RESULT = new NameTy(vleft, vright, NameTy.VOID); :}
+               ;
+
+funDeclaration ::= typeSpecifier:ts ID:id LPAREN params:ps RPAREN compoundStatement:cs
+               {: RESULT = new FunctionDec(tsleft, tsright, ts, id, ps, cs); :}
+               ;
+
+funPrototype   ::= typeSpecifier:ts ID:id LPAREN params:ps RPAREN SEMI
+               {:RESULT = new FunctionDec(tsleft, tsright, ts, id, ps, null); :}
+               ;
+
+params   ::= paramList:pl
+         {: RESULT = pl; :}
          | VOID
          ;
 
-paramList ::= paramList:pl COMMA param:p
+paramList   ::= paramList:pl COMMA param:p
+            {: VarDecList t = pl;
+               while ( t.tail != null )
+                  t = t.tail;
+               t.tail = new VarDecList(p, null);
+               RESULT = pl;
+            :}
             | param:p
+            {: RESULT = new VarDecList(p, null); :}
             ;
 
-param ::= typeSpecifier:ts ID:id
-        | typeSpecifier:ts ID:id LBRACKET RBRACKET
-        ;
+param    ::= typeSpecifier:ts ID:id
+         {: RESULT = new SimpleDec(tsleft, tsright, ts, id); :}
+         | typeSpecifier:ts ID:id LBRACKET RBRACKET
+         {: RESULT = new ArrayDec(tsleft, tsright, ts, id, 0); :}
+         ;
 
 compoundStatement ::= LBRACE localDeclarations:ld statementList:sl RBRACE
-                    ;
+                  {: RESULT = new CompoundExp(ldleft, ldright, ld, sl); :}
+                  ;
 
 localDeclarations ::= localDeclarations:ld varDeclaration:vd
-                    ;
+                  {: VarDecList t = ld;
+                     while ( t.tail != null )
+                        t = t.tail;
+                     t.tail = new VarDecList(vd, null);
+                     RESULT = ld;
+                  :}
+                  | varDeclaration:vd
+                  {: RESULT = new VarDecList(vd, null); :}
+                  ;
 
-statementList ::= statementList:sl statement:s
-                |  statement:s
-                ;
+statementList  ::= statementList:sl statement:s
+               {: ExpList t = sl;
+                  while ( t.tail != null )
+                     t = t.tail;
+                  t.tail = new ExpList(s, null);
+                  RESULT = sl;
+               :}
+               |  statement:s
+               {: RESULT = new ExpList(s, null); :}
+               ;
 
-statement ::= expressionStatement:es
+statement   ::= expressionStatement:es
+            {: RESULT = es; :}
             | compoundStatement:cs
             | selectionStatement:ss
             | iterationStatement:is
             | returnStatement:rs
             ;
 
-expressionStatement ::= expression:e SEMI
-                      | SEMI
-                      ;
-
-selectionStatement  ::= IF:i LPAREN expression:e RPAREN statement:s
-                      | IF:i LPAREN expression:e RPAREN statement:m ELSE statement:u
-                      ;
-
-iterationStatement ::= WHILE:w LPAREN expression:e RPAREN statement:s
+expressionStatement  ::= expression:e SEMI
+                     {: RESULT = e; :}
+                     | SEMI
                      ;
 
-returnStatement ::= RETURN:r expression:e SEMI
+selectionStatement   ::= IF:i LPAREN expression:e RPAREN statement:s
+                     | IF:i LPAREN expression:e RPAREN statement:m ELSE statement:u
+                     ;
+
+iterationStatement   ::= WHILE:w LPAREN expression:e RPAREN statement:s
+                     ;
+
+returnStatement   ::= RETURN:r expression:e SEMI
                   | RETURN:r SEMI
                   ;
 
-expression ::= var:v ASSIGN expression:e
+expression  ::= var:v ASSIGN expression:e
+            {: RESULT = new AssignExp(vleft, vright, new VarExp(vleft, vright, v), e); :}
             | expression:e1 PLUS expression:e2
+            {: RESULT = new OpExp(e1left, e1right, e1, OpExp.PLUS, e2); :}
             | expression:e1 MINUS expression:e2
+            {: RESULT = new OpExp(e1left, e1right, e1, OpExp.MINUS, e2); :}
             | expression:e1 TIMES expression:e2
+            {: RESULT = new OpExp(e1left, e1right, e1, OpExp.TIMES, e2); :}
             | expression:e1 OVER expression:e2
+            {: RESULT = new OpExp(e1left, e1right, e1, OpExp.OVER, e2); :}
             | expression:e1 EQ expression:e2
+            {: RESULT = new OpExp(e1left, e1right, e1, OpExp.EQ, e2); :}
             | expression:e1 NE expression:e2
+            {: RESULT = new OpExp(e1left, e1right, e1, OpExp.NE, e2); :}
             | expression:e1 LT expression:e2
+            {: RESULT = new OpExp(e1left, e1right, e1, OpExp.LT, e2); :}
             | expression:e1 LE expression:e2
+            {: RESULT = new OpExp(e1left, e1right, e1, OpExp.LE, e2); :}
             | expression:e1 GT expression:e2
+            {: RESULT = new OpExp(e1left, e1right, e1, OpExp.GT, e2); :}
             | expression:e1 GE expression:e2
+            {: RESULT = new OpExp(e1left, e1right, e1, OpExp.GE, e2); :}
             | NOT:n expression:e
+            {: RESULT = new OpExp(nleft, nright, new NilExp(nleft, nright), OpExp.NOT, e); :}
             | expression:e1 AND expression:e2
+            {: RESULT = new OpExp(e1left, e1right, e1, OpExp.AND, e2); :}
             | expression:e1 OR expression:e2
+            {: RESULT = new OpExp(e1left, e1right, e1, OpExp.OR, e2); :}
             | MINUS:m expression:e
+            {: RESULT = new OpExp(mleft, mright, new NilExp(mleft, mright), OpExp.UMINUS, e); :}
             | LPAREN expression:e RPAREN
+            {: RESULT = e; :}
             | var:v
-            | ID:id args:a
+            {: RESULT = new VarExp(vleft, vright, v); :}
+            | ID:id LPAREN args:a RPAREN
+            {: RESULT = new CallExp(idleft, idright, id, a); :}
+            | ID:id LPAREN RPAREN
+            {: RESULT = new CallExp(idleft, idright, id, null);:}
             | NUM:n
+            {: RESULT = new IntExp(nleft, nright, Integer.parseInt(n)); :}
             | TRUTH:t
+            {: RESULT = new BoolExp(tleft, tright, Boolean.parseBoolean(t)); :}
             ;
 
-var ::= ID:id
+var   ::= ID:id
+      {: RESULT = new SimpleVar(idleft, idright, id); :}
       | ID:id LBRACKET expression:e RBRACKET
+      {: RESULT = new IndexVar(idleft, idright, id, e); :}
       ;
 
-args ::= argList:al
-       ;
+args  ::= argList:al
+      ;
 
-argList ::= argList:al COMMA expression:e
-          | expression:e
-          ;
+argList  ::= argList:al COMMA expression:e
+         | expression:e
+         ;
 
