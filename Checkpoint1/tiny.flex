@@ -121,9 +121,9 @@ comments = (\/\*)(.|[\r\n])*?(\*\/)
 "]"                        { return symbol(sym.RBRACKET); }
 "{"                        { return symbol(sym.LBRACE); }
 "}"                        { return symbol(sym.RBRACE); }
-{truth}                    { return symbol(sym.TRUTH, Boolean.parseBoolean(yytext())); }
+{truth}                    { return symbol(sym.TRUTH, yytext()); }
 {id}                       { return symbol(sym.ID, yytext()); }
-{number}                   { return symbol(sym.NUM, Integer.parseInt(yytext())); }
+{number}                   { return symbol(sym.NUM, yytext()); }
 {WhiteSpace}+              { /* skip whitespace */ }   
 {comments}                 { /* skip comments */ }
 .                          { return symbol(sym.ERROR); }

@@ -72,7 +72,7 @@ parser code {:
 /* ------------Declaration of Terminals and Non Terminals Section----------- */
    
 terminal ELSE, IF, WHILE, INT, VOID, RETURN, BOOL;
-terminal PLUS, MINUS, TIMES, OVER, LT, LE, GT, GE, EQ, NE, NOT, OR, AND, ASSIGN, SEMI, COMMA, UMINUS;
+terminal PLUS, MINUS, TIMES, OVER, LT, LE, GT, GE, EQ, NE, NOT, OR, AND, ASSIGN, SEMI, COMMA;
 terminal LPAREN, RPAREN, LBRACKET, RBRACKET, LBRACE, RBRACE;
 terminal String ID, NUM, TRUTH;
 terminal ERROR;
@@ -83,19 +83,16 @@ non terminal VarDec varDeclaration, param;
 non terminal FunctionDec funDeclaration;
 non terminal NameTy typeSpecifier;
 non terminal VarDecList params, paramList, localDeclarations;
-non terminal ExpList argList, args, statementList;
+non terminal ExpList args, argsList, statementList;
 non terminal Exp expression, compoundStatement, expressionStatement, iterationStatement, selectionStatement, statement, returnStatement;
 non terminal Var var;
 
-precedence nonassoc AND, OR;
-precedence nonassoc LT, GT, LE, GE, NE, EQ;
+precedence nonassoc AND, OR, LT, GT, LE, GE, NE, EQ;
 precedence left PLUS, MINUS;
 precedence left TIMES, OVER;
-precedence left UMINUS, NOT;
-precedence left COMMA;
-precedence left ELSE,SEMI,ID;
-/* ----------------------------Grammar Section-------------------- */
+precedence left ELSE;
 
+/* ----------------------------Grammar Section-------------------- */
 start with program;
 
 program  ::= decList:dl
@@ -146,6 +143,7 @@ funPrototype   ::= typeSpecifier:ts ID:id LPAREN params:ps RPAREN SEMI
 params   ::= paramList:pl
          {: RESULT = pl; :}
          | VOID
+         {: RESULT = new VarDecList(null, null); :}
          ;
 
 paramList   ::= paramList:pl COMMA param:p
@@ -176,8 +174,8 @@ localDeclarations ::= localDeclarations:ld varDeclaration:vd
                      t.tail = new VarDecList(vd, null);
                      RESULT = ld;
                   :}
-                  | varDeclaration:vd
-                  {: RESULT = new VarDecList(vd, null); :}
+                  |
+                  {: /* Empty code */ :}
                   ;
 
 statementList  ::= statementList:sl statement:s
@@ -187,16 +185,20 @@ statementList  ::= statementList:sl statement:s
                   t.tail = new ExpList(s, null);
                   RESULT = sl;
                :}
-               |  statement:s
-               {: RESULT = new ExpList(s, null); :}
+               |
+               {: /* Empty code */ :}
                ;
 
 statement   ::= expressionStatement:es
             {: RESULT = es; :}
             | compoundStatement:cs
+            {: RESULT = cs; :}
             | selectionStatement:ss
+            {: RESULT = ss; :}
             | iterationStatement:is
+            {: RESULT = is; :}
             | returnStatement:rs
+            {: RESULT = rs; :}
             ;
 
 expressionStatement  ::= expression:e SEMI
@@ -205,14 +207,19 @@ expressionStatement  ::= expression:e SEMI
                      ;
 
 selectionStatement   ::= IF:i LPAREN expression:e RPAREN statement:s
-                     | IF:i LPAREN expression:e RPAREN statement:m ELSE statement:u
+                     {: RESULT = new IfExp(ileft, iright, e, s, new NilExp(ileft, iright)); :}
+                     | IF:i LPAREN expression:e RPAREN statement:s1 ELSE statement:s2
+                     {: RESULT = new IfExp(ileft, iright, e, s1, s2); :}
                      ;
 
-iterationStatement   ::= WHILE:w LPAREN expression:e RPAREN statement:s
+iterationStatement   ::= WHILE:w LPAREN expression:e RPAREN statement:s 
+                     {: RESULT = new WhileExp(wleft, wright, e, s); :} 
                      ;
 
 returnStatement   ::= RETURN:r expression:e SEMI
+                  {: RESULT = new ReturnExp(rleft, rright, e); :}
                   | RETURN:r SEMI
+                  {: RESULT = new ReturnExp(rleft, rright, new NilExp(rleft, rright)); :}
                   ;
 
 expression  ::= var:v ASSIGN expression:e
@@ -252,7 +259,7 @@ expression  ::= var:v ASSIGN expression:e
             | ID:id LPAREN args:a RPAREN
             {: RESULT = new CallExp(idleft, idright, id, a); :}
             | ID:id LPAREN RPAREN
-            {: RESULT = new CallExp(idleft, idright, id, null);:}
+            {: RESULT = new CallExp(idleft, idright, id, null); :}
             | NUM:n
             {: RESULT = new IntExp(nleft, nright, Integer.parseInt(n)); :}
             | TRUTH:t
@@ -265,10 +272,18 @@ var   ::= ID:id
       {: RESULT = new IndexVar(idleft, idright, id, e); :}
       ;
 
-args  ::= argList:al
+args  ::= argsList:al
+      {: RESULT = al; :}
       ;
 
-argList  ::= argList:al COMMA expression:e
+argsList ::= argsList:al COMMA expression:e
+         {: ExpList t = al;
+            while ( t.tail != null )
+               t = t.tail;
+            t.tail = new ExpList(e, null);
+            RESULT = al;
+         :}
          | expression:e
+         {: RESULT = new ExpList(e, null); :}
          ;
 
