@@ -101,12 +101,13 @@ public class ShowTreeVisitor implements AbsynVisitor {
         }
         level++;
         VarDecList varDecList = exp.params;
-        while( varDecList != null ) {
+        while( varDecList != null && varDecList.head != null) {
             varDecList.head.accept( this, level );
             varDecList = varDecList.tail;
         }
-        if( exp.body != null )
+        if( exp.body != null ) {
             exp.body.accept( this, level );
+        }
     }
 
     public void visit ( IfExp exp, int level ) {
