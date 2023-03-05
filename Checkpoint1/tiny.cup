@@ -46,7 +46,7 @@ parser code {:
    
         /* Add to the end of the StringBuffer error message created in
            this method the message that was passed into this method. */
-        m.append(" : "+message);
+        m.append(": "+message);
    
         /* Print the contents of the StringBuffer 'm', which contains
            an error message, out on a line. */
@@ -134,10 +134,18 @@ typeSpecifier  ::= BOOL:b
 
 funDeclaration ::= typeSpecifier:ts ID:id LPAREN params:ps RPAREN compoundStatement:cs
                   {: RESULT = new FunctionDec(tsleft, tsright, ts, id, ps, cs); :}
+               |typeSpecifier:ts ID:id LPAREN error:e RPAREN compoundStatement:cs
+                  {: parser.report_error("in line " + (eleft + 1) + ", column " + (eright + 1) + " : function declaration must have void for empty parameters", e);
+                     RESULT = new FunctionDec(tsleft, tsright, ts, id, null, cs);
+                  :}
                ;
 
 funPrototype   ::= typeSpecifier:ts ID:id LPAREN params:ps RPAREN SEMI
-                  {:RESULT = new FunctionDec(tsleft, tsright, ts, id, ps, null); :}
+                  {: RESULT = new FunctionDec(tsleft, tsright, ts, id, ps, null); :}
+               | typeSpecifier:ts ID:id LPAREN error:e RPAREN SEMI
+                  {: parser.report_error("in line " + (eleft + 1) + ", column " + (eright + 1) + " : function prototype must have void for empty parameters", e);
+                     RESULT = new FunctionDec(tsleft, tsright, ts, id, null, null); 
+                  :}
                ;
 
 params   ::= paramList:pl
@@ -170,7 +178,7 @@ compoundStatement ::= LBRACE localDeclarations:ld statementList:sl RBRACE
 localDeclarations ::= localDeclarations:ld varDeclaration:vd
                      {: VarDecList t = ld;
                         if(t == null) {
-                           ld = new VarDecList(vd,null);
+                           ld = new VarDecList(vd, null);
                            RESULT = ld;
                         } else {
                            while( t.tail != null )
@@ -186,7 +194,7 @@ localDeclarations ::= localDeclarations:ld varDeclaration:vd
 statementList  ::= statementList:sl statement:s
                   {: ExpList t = sl;
                      if(t == null) {
-                        sl = new ExpList(s,null);
+                        sl = new ExpList(s, null);
                         RESULT = sl;
                      } else {
                         while( t.tail != null )
@@ -197,6 +205,10 @@ statementList  ::= statementList:sl statement:s
                   :}
                |
                   {: RESULT = null; :}
+               | error SEMI statement:s
+                 {: parser.report_error("invalid declaration in statementList", null); 
+                    RESULT = new ExpList(s, null); 
+                 :}
                ;
 
 statement   ::= expressionStatement:es
@@ -230,6 +242,10 @@ returnStatement   ::= RETURN:r expression:e SEMI
                      {: RESULT = new ReturnExp(rleft, rright, e); :}
                   | RETURN:r SEMI
                      {: RESULT = new ReturnExp(rleft, rright, new NilExp(rleft, rright)); :}
+                  | RETURN:r expression:exp error SEMI
+                     {: parser.report_error("Invalid return expression before ';' in line " + (rleft + 1) + " at column " + rright, null); 
+                        RESULT = new ReturnExp(rleft, rright, exp);
+                     :}
                   ;
 
 expression  ::= var:v ASSIGN expression:e
