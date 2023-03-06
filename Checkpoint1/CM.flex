@@ -1,12 +1,3 @@
-/*
-  Created By: Fei Song
-  File Name: tiny.flex
-  To Build: jflex tiny.flex
-
-  and then after the parser is created
-    javac Lexer.java
-*/
-   
 /* --------------------------Usercode Section------------------------ */
    
 import java_cup.runtime.*;

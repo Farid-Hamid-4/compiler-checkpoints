@@ -64,7 +64,7 @@ parser code {:
    
 
 /* ------------Declaration of Terminals and Non Terminals Section----------- */
-
+   
 terminal ELSE, IF, WHILE, INT, VOID, RETURN, BOOL;
 terminal PLUS, MINUS, TIMES, OVER, LT, LE, GT, GE, EQ, NE, NOT, OR, AND, ASSIGN, SEMI, COMMA;
 terminal LPAREN, RPAREN, LBRACKET, RBRACKET, LBRACE, RBRACE;
