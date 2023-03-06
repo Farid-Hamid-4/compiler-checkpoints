@@ -4,8 +4,8 @@ public class OpExp extends Exp {
     public final static int PLUS = 0;
     public final static int MINUS = 1;
     public final static int UMINUS = 2;
-    public final static int MUL = 3;
-    public final static int DIV = 4;
+    public final static int TIMES = 3;
+    public final static int OVER = 4;
     public final static int EQ = 5;
     public final static int NE = 6;
     public final static int LT = 7;
