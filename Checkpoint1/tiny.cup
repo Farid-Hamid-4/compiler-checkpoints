@@ -75,7 +75,7 @@ terminal ELSE, IF, WHILE, INT, VOID, RETURN, BOOL;
 terminal PLUS, MINUS, TIMES, OVER, LT, LE, GT, GE, EQ, NE, NOT, OR, AND, ASSIGN, SEMI, COMMA;
 terminal LPAREN, RPAREN, LBRACKET, RBRACKET, LBRACE, RBRACE;
 terminal String ID, NUM, TRUTH;
-terminal String ERROR;
+terminal ERROR;
 
 non terminal DecList program, decList;
 non terminal Dec dec, funPrototype;
@@ -151,7 +151,6 @@ funPrototype   ::= typeSpecifier:ts ID:id LPAREN params:ps RPAREN SEMI
 params   ::= paramList:pl
             {: RESULT = pl; :}
          | VOID
-            {: RESULT = new VarDecList(null, null); :}
          ;
 
 paramList   ::= paramList:pl COMMA param:p
@@ -205,10 +204,6 @@ statementList  ::= statementList:sl statement:s
                   :}
                |
                   {: RESULT = null; :}
-               | error SEMI statement:s
-                 {: parser.report_error("invalid declaration in statementList", null); 
-                    RESULT = new ExpList(s, null); 
-                 :}
                ;
 
 statement   ::= expressionStatement:es
@@ -312,4 +307,3 @@ argsList ::= argsList:al COMMA expression:e
          | expression:e
             {: RESULT = new ExpList(e, null); :}
          ;
-

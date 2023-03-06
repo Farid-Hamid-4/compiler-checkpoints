@@ -43,7 +43,7 @@ public class ShowTreeVisitor implements AbsynVisitor {
         System.out.println( "CallExp: " );
         level++;
         indent( level );
-        System.out.println(" Func: " + exp.func);
+        System.out.println("Func: " + exp.func);
         ExpList argsList = exp.args;
         while( argsList != null ) {
           argsList.head.accept( this, level );
@@ -51,7 +51,6 @@ public class ShowTreeVisitor implements AbsynVisitor {
         }
     }
 
-    /* Can't print args, so do we really need to append exp.func to a newline */
     public void visit ( CompoundExp exp, int level ) {
         indent( level );
         System.out.println( "CompoundExp: " );
@@ -99,12 +98,13 @@ public class ShowTreeVisitor implements AbsynVisitor {
             indent( level );
             System.out.println( "NameTy: void");
         }
-        level++;
+
         VarDecList varDecList = exp.params;
         while( varDecList != null && varDecList.head != null) {
             varDecList.head.accept( this, level );
             varDecList = varDecList.tail;
         }
+        
         if( exp.body != null ) {
             exp.body.accept( this, level );
         }
@@ -144,7 +144,7 @@ public class ShowTreeVisitor implements AbsynVisitor {
     
     public void visit ( NilExp exp, int level ) {
         indent( level );
-        System.out.println( "NilExp:" );
+        System.out.println( "NilExp: null" );
     }
 
     public void visit ( OpExp exp, int level ) {
@@ -213,15 +213,19 @@ public class ShowTreeVisitor implements AbsynVisitor {
         indent( level );
         System.out.println( "SimpleDec:");
         level++;
+        
         indent( level );
         if( exp.typ.typ == 0 )
             System.out.println("NameTy: bool");
         else if( exp.typ.typ == 1 ) 
             System.out.println( "NameTy: int");
-        else if ( exp.typ.typ == 2 )
+        else if( exp.typ.typ == 2 )
             System.out.println( "NameTy: void"); 
-        indent( level );
-        System.out.println("String: " + exp.name);
+
+        if ( exp.name != null ) {
+            indent( level );
+            System.out.println("String: " + exp.name);
+        }
     }
 
     public void visit ( SimpleVar exp, int level ) {
