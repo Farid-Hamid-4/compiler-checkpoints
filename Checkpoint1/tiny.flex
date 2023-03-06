@@ -82,7 +82,7 @@ number = {digit}+
 id = [_a-zA-Z][_a-zA-Z0-9]*
 truth = false|true
 
-comments = (\/\*)(.|[\r\n])*?(\*\/)
+comments = \/\*[^*]*\*\/
 
 %%
 /* ------------------------Lexical Rules Section---------------------- */
@@ -126,4 +126,4 @@ comments = (\/\*)(.|[\r\n])*?(\*\/)
 {number}                   { return symbol(sym.NUM, yytext()); }
 {WhiteSpace}+              { /* skip whitespace */ }   
 {comments}                 { /* skip comments */ }
-.                          { return symbol(sym.ERROR); }
+.                          { System.out.println("WHY AM I HERE"); return symbol(sym.ERROR); }
