@@ -68,13 +68,15 @@ public class ShowTreeVisitor implements AbsynVisitor {
     }
 
     public void visit ( DecList decList, int level ) {
-        while ( decList != null ) {
+
+        while ( decList != null && decList.head != null) {
             decList.head.accept( this, level );
             decList = decList.tail;
         }
     }
 
     public void visit ( ExpList expList, int level ) {
+
         while( expList != null ) {
             expList.head.accept( this, level );
             expList = expList.tail;
@@ -211,9 +213,13 @@ public class ShowTreeVisitor implements AbsynVisitor {
 
     public void visit ( SimpleDec exp, int level ) {
         indent( level );
+
+        if (exp.name == null) return;
+
         System.out.println( "SimpleDec:");
         level++;
-        
+    
+    
         indent( level );
         if( exp.typ.typ == 0 )
             System.out.println("NameTy: bool");
@@ -222,10 +228,9 @@ public class ShowTreeVisitor implements AbsynVisitor {
         else if( exp.typ.typ == 2 )
             System.out.println( "NameTy: void"); 
 
-        if ( exp.name != null ) {
-            indent( level );
-            System.out.println("String: " + exp.name);
-        }
+        indent( level );
+        System.out.println("String: " + exp.name);
+
     }
 
     public void visit ( SimpleVar exp, int level ) {

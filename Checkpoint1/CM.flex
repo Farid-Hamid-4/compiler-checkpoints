@@ -117,4 +117,4 @@ comments = \/\*[^*]*\*\/
 {number}                   { return symbol(sym.NUM, yytext()); }
 {WhiteSpace}+              { /* skip whitespace */ }   
 {comments}                 { /* skip comments */ }
-.                          { return symbol(sym.ERROR); }
+.                          { System.err.println("ERROR: Unrecognized character \'" + yytext() +"\' on line " + yyline); return symbol(sym.ERROR); }
