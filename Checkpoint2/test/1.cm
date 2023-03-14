@@ -1,0 +1,43 @@
+/* This should throw no errors. It uses sort.cm and includes extra function prototypes along with a CallExp with two variables on line 33 */
+
+int x[10];
+
+int x(void);
+void x(void);
+bool x(int u, int v);
+
+int minloc(int a[], int low, int high) {
+  int i; 
+  int x; 
+  int k;
+
+  k = low;
+  x = a[low];
+  i = low + 1;
+  while (i < high) {
+    if (a[i] < x) {
+       x = a[i];
+       k = i; 
+    }
+    i = i + 1;
+  } 
+  return k;
+}
+
+void main(void) {
+  int i;
+
+  i = 0;
+  while (i < 10) {
+    x[i] = input(a, b);
+    i = i + 1;
+  }
+
+  sort(x, 0, 10);
+
+  i = 0;
+  while (i < 10) {
+    output(x[i]);
+    i = i + 1;
+  }
+}
