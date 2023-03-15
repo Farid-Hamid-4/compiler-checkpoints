@@ -1,4 +1,7 @@
 import absyn.*;
+import java.util.HashMap;
+import java.util.Scanner;
+import java.util.Iterator;
 
 public class SemanticAnalyzer implements AbsynVisitor {
 
@@ -36,6 +39,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
 
     public void visit ( FunctionDec exp, int level ) {
+        
     }
 
     public void visit ( IfExp exp, int level ) {

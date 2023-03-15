@@ -2,8 +2,13 @@ JAVA=java
 JAVAC=javac
 
 JFLEX=jflex
-CLASSPATH=-cp /Users/farid/Documents/java-cup-bin-11b/java-cup-11b.jar:.
-CUP=$(JAVA) $(CLASSPATH) java_cup.Main
+CLASSPATH=-cp /usr/share/java/cup.jar:.
+CUP=cup
+
+# Farid's Makefile configurations
+# JFLEX=jflex
+# CLASSPATH=-cp /Users/farid/Documents/java-cup-bin-11b/java-cup-11b.jar:.
+# CUP=$(JAVA) $(CLASSPATH) java_cup.Main
 
 all: CM.class
 
