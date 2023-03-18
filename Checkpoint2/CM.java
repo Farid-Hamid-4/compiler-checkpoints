@@ -23,9 +23,12 @@ class CM {
         result.accept(visitor, 0); 
       }
       if (s_flag && result != null) {
-        System.out.println("The semantic analyzer is:");
+        System.out.println("Entering the global scope:");
+        SemanticAnalyzer visitor = new SemanticAnalyzer();
+        result.accept(visitor, 0);
+        visitor.printSymbolTable(1);
+        System.out.println("Leaving the global scope");
       }
-
     } catch (Exception e) {
       /* do cleanup here -- possibly rethrow e */
       e.printStackTrace();

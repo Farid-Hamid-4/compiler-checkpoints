@@ -8,18 +8,18 @@ public class ShowTreeVisitor implements AbsynVisitor {
         for( int i = 0; i < level * SPACES; i++ ) System.out.print( " " );
     }
     
-    public void visit( ArrayDec exp, int level ) {
+    public void visit( ArrayDec dec, int level ) {
         indent( level );
         level++;
         System.out.println( "ArrayDec:");
         indent( level );
-        if ( exp.typ.typ == 1) {
+        if ( dec.typ.typ == 1) {
             System.out.println( "NameTy: int" );
             indent( level );
-            System.out.println( "Name: " + exp.name );
-            if( exp.size != 0 ) {
+            System.out.println( "Name: " + dec.name );
+            if( dec.size != 0 ) {
                 indent( level );
-                System.out.println( "Size: " + exp.size );
+                System.out.println( "Size: " + dec.size );
             }
         }
     }
@@ -68,7 +68,6 @@ public class ShowTreeVisitor implements AbsynVisitor {
     }
 
     public void visit ( DecList decList, int level ) {
-
         while ( decList != null && decList.head != null) {
             decList.head.accept( this, level );
             decList = decList.tail;
@@ -76,40 +75,32 @@ public class ShowTreeVisitor implements AbsynVisitor {
     }
 
     public void visit ( ExpList expList, int level ) {
-
         while( expList != null ) {
             expList.head.accept( this, level );
             expList = expList.tail;
         } 
     }
 
-    public void visit ( FunctionDec exp, int level ) {
+    public void visit ( FunctionDec dec, int level ) {
         indent( level );
         System.out.println("FunctionDec:");
         level++;
-
-        if( exp.result.typ == 0 ) {
-            indent( level );
+        
+        indent( level );
+        if( dec.result.typ == 0 )
             System.out.println( "NameTy: bool" );
-        }
-        else if ( exp.result.typ == 1 ) {
-            indent( level );   
+        else if ( dec.result.typ == 1 )
             System.out.println( "NameTy: int");
-        }
-        else if ( exp.result.typ == 2 ) {
-            indent( level );
+        else if ( dec.result.typ == 2 )
             System.out.println( "NameTy: void");
-        }
 
-        VarDecList varDecList = exp.params;
+        VarDecList varDecList = dec.params;
         while( varDecList != null && varDecList.head != null) {
             varDecList.head.accept( this, level );
             varDecList = varDecList.tail;
         }
-        
-        if( exp.body != null ) {
-            exp.body.accept( this, level );
-        }
+        if( dec.body != null )
+            dec.body.accept( this, level );   
     }
 
     public void visit ( IfExp exp, int level ) {
@@ -124,11 +115,11 @@ public class ShowTreeVisitor implements AbsynVisitor {
            exp.elsee.accept( this, level );
     }
 
-    public void visit ( IndexVar exp, int level ) {
+    public void visit ( IndexVar var, int level ) {
         indent( level );
-        System.out.println( "IndexVar: " + exp.name );
+        System.out.println( "IndexVar: " + var.name );
         level++;
-        exp.index.accept( this, level );
+        var.index.accept( this, level );
     }
     
     public void visit ( IntExp exp, int level ) {
@@ -136,13 +127,13 @@ public class ShowTreeVisitor implements AbsynVisitor {
         System.out.println( "IntExp: " + exp.value ); 
     }
 
-    public void visit ( NameTy exp, int level ) {
+    public void visit ( NameTy type, int level ) {
         indent( level );
-        if ( exp.typ == 0) 
+        if ( type.typ == 0) 
             System.out.println( "NameTy: BOOL" );
-        else if ( exp.typ == 1 ) 
+        else if ( type.typ == 1 ) 
             System.out.println( "NameTy: INT" );
-        else if ( exp.typ == 2 ) 
+        else if ( type.typ == 2 ) 
             System.out.println( "NameTy: VOID" );
     }
     
@@ -213,31 +204,29 @@ public class ShowTreeVisitor implements AbsynVisitor {
             expr.exp.accept( this, level );
     }
 
-    public void visit ( SimpleDec exp, int level ) {
+    public void visit ( SimpleDec dec, int level ) {
         indent( level );
 
-        if (exp.name == null) return;
+        if (dec.name == null) return;
 
         System.out.println( "SimpleDec:");
         level++;
     
-    
         indent( level );
-        if( exp.typ.typ == 0 )
+        if( dec.typ.typ == 0 )
             System.out.println("NameTy: bool");
-        else if( exp.typ.typ == 1 ) 
+        else if( dec.typ.typ == 1 ) 
             System.out.println( "NameTy: int");
-        else if( exp.typ.typ == 2 )
+        else if( dec.typ.typ == 2 )
             System.out.println( "NameTy: void"); 
 
         indent( level );
-        System.out.println("String: " + exp.name);
-
+        System.out.println("String: " + dec.name);
     }
 
-    public void visit ( SimpleVar exp, int level ) {
+    public void visit ( SimpleVar var, int level ) {
         indent( level );
-        System.out.println( "SimpleVar: " + exp.name );
+        System.out.println( "SimpleVar: " + var.name );
     }
 
     public void visit ( VarDecList varDecList, int level ) {
