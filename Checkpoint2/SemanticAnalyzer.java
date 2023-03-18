@@ -68,9 +68,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
     public void visit( ArrayDec dec, int level ) {
         NodeType symbol = new NodeType(dec.name, dec, level);
 
-        if (lookup(dec.name, "array variable")) {
-            System.err.println("                      ^");
-        } else {
+        if (lookup(dec.name, "array variable") == false) {
             insert(stack.peek(), symbol);
         }
     }
@@ -119,17 +117,15 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
 
     public void visit ( FunctionDec dec, int level ) {
-        if(lookup(dec.func, "function")) {
-            System.err.println("                ^");
-            return;
-        }
+        if(lookup(dec.func, "function")) return;
 
         level++;
         indent( level );
         System.out.println("Entering the scope for function " + dec.func + ":");
-
+        
         ArrayList<NodeType> nodeList = symbolTable.get("global");
-        nodeList.add(new NodeType(dec.func, dec, level));
+        if(nodeList != null)
+            nodeList.add(new NodeType(dec.func, dec, level));
 
         level++;
         stack.add(dec.func);
@@ -201,11 +197,8 @@ public class SemanticAnalyzer implements AbsynVisitor {
     public void visit ( SimpleDec dec, int level ) {
         NodeType symbol = new NodeType(dec.name, dec, level);
 
-        if (lookup(dec.name, "variable")) {
-            System.err.println("                ^");
-        } else {
+        if (lookup(dec.name, "variable") == false)
             insert(stack.peek(), symbol);
-        }
     }
 
     public void visit ( SimpleVar var, int level ) {
