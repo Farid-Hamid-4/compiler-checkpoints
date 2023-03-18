@@ -8,6 +8,17 @@ public class VarDecList extends Absyn {
       this.head = head;
       this.tail = tail;
     }
+
+    public String toString() {
+      String varTypes = "";
+      VarDecList pointer = this;
+      for(; pointer != null; pointer = pointer.tail) {
+        varTypes += pointer.head;
+        if(pointer.tail != null)
+          varTypes += ", ";
+      }
+      return varTypes;
+    }
   
     public void accept( AbsynVisitor visitor, int level ) {
       visitor.visit( this, level );

@@ -14,7 +14,15 @@ public class FunctionDec extends Dec {
         this.params = params;
         this.body = body;
     }
-    
+
+    public String toString() {
+        String parameters = (params != null) ? "(" + params.toString() + ")" : "(void)";
+        if(result.typ == 0) return parameters + " -> bool";
+        if(result.typ == 1) return parameters + " -> int";
+        if(result.typ == 2) return parameters + " -> void";
+        return null;
+    }
+
     public void accept( AbsynVisitor visitor, int level ) {
         visitor.visit( this, level );
     }

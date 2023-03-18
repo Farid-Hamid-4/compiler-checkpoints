@@ -35,10 +35,24 @@ public class SemanticAnalyzer implements AbsynVisitor {
         }
     }
 
-    public void lookup() {
+    public boolean lookup(String name, String type) {
+        Iterator<String> scope = stack.iterator();
+        while( scope.hasNext() ) {
+            ArrayList<NodeType> list = symbolTable.get(scope.next());
+            if(list != null) {
+                for(int i = 0; i < list.size(); i++) {
+                    if(list.get(i).name.equals(name)) {
+                        System.err.println("Error: " + type + " " + name + " has already been declared on line " + (list.get(i).def.row + 1) + ", column " + (list.get(i).def.col + 1));
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     public void delete() {
+        /* Delete local scopes from table */
     }
 
     public void printSymbolTable( int level ) {
@@ -54,11 +68,10 @@ public class SemanticAnalyzer implements AbsynVisitor {
     public void visit( ArrayDec dec, int level ) {
         NodeType symbol = new NodeType(dec.name, dec, level);
 
-        if(symbolTable.containsKey(dec.name) == false) {
-            insert(stack.peek(), symbol);
+        if (lookup(dec.name, "array variable")) {
+            System.err.println("                      ^");
         } else {
-            System.err.println("Error: array variable " + dec.name + " already declared on line " + (dec.row + 1) + ", column " + (dec.col + 1));
-            System.err.println("                     ^");
+            insert(stack.peek(), symbol);
         }
     }
 
@@ -106,19 +119,27 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
 
     public void visit ( FunctionDec dec, int level ) {
+        if(lookup(dec.func, "function")) {
+            System.err.println("                ^");
+            return;
+        }
+
         level++;
         indent( level );
         System.out.println("Entering the scope for function " + dec.func + ":");
-        
+
+        ArrayList<NodeType> nodeList = symbolTable.get("global");
+        nodeList.add(new NodeType(dec.func, dec, level));
+
         level++;
         stack.add(dec.func);
-
+        
         VarDecList varDecList = dec.params;
         while( varDecList != null && varDecList.head != null) {
             varDecList.head.accept( this, level );
             varDecList = varDecList.tail;
         }
-        if( dec.body != null ) 
+        if (dec.body != null)
             dec.body.accept( this, level );
         
         printSymbolTable( level );
@@ -130,15 +151,26 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
 
     public void visit ( IfExp exp, int level ) {
+        indent( level );
         System.out.println("Entering a new block:");
 
+        level++;
+        nest++;
+        stack.add(String.valueOf(nest));
+        
         if (exp.test != null)
             exp.test.accept( this, level );
         if ( exp.then != null)
             exp.then.accept( this, level );
         if ( exp.elsee != null )
             exp.elsee.accept( this, level );
-
+            
+        printSymbolTable( level );
+        
+        stack.pop();
+        level--;
+            
+        indent( level );
         System.out.println("Leaving the block");
     }
 
@@ -166,24 +198,14 @@ public class SemanticAnalyzer implements AbsynVisitor {
             expr.exp.accept( this, level );
     }
 
-    /* Still prints and recognizes the variable even though redeclared */
     public void visit ( SimpleDec dec, int level ) {
         NodeType symbol = new NodeType(dec.name, dec, level);
-        
-        Iterator<String> scope = stack.iterator();
-        while( scope.hasNext() ) {
-            ArrayList<NodeType> list = symbolTable.get(scope.next());
-            if(list != null) {
-                for(int i = 0; i < list.size(); i++) {
-                    if(list.get(i).name.equals(dec.name)) {
-                        System.err.println("Error: variable " + dec.name + " already declared on line " + (dec.row + 1) + ", column " + (dec.col + 1));
-                        System.err.println("                ^"); 
-                        return;      
-                    }
-                }
-            }
+
+        if (lookup(dec.name, "variable")) {
+            System.err.println("                ^");
+        } else {
+            insert(stack.peek(), symbol);
         }
-        insert(stack.peek(), symbol);
     }
 
     public void visit ( SimpleVar var, int level ) {
@@ -200,8 +222,23 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
 
     public void visit ( WhileExp exp, int level ) {
+        indent( level );
+        System.out.println("Entering a new block:");
+        
+        level++;
+        nest++;
+        stack.add(String.valueOf(nest));
+
         if ( exp.test != null )
             exp.test.accept( this, level );
         exp.body.accept( this, level );
+
+        printSymbolTable( level );
+
+        stack.pop();
+        level--;
+        
+        indent( level );
+        System.out.println("Leaving the block");
     }
 }

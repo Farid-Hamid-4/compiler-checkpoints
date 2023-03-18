@@ -13,6 +13,13 @@ public class ArrayDec extends VarDec {
         this.size = size;
     }
 
+    public String toString(){
+        if(typ.typ == 0) return "bool";
+        if(typ.typ == 1) return "int";
+        if(typ.typ == 2) return "void";
+        return null;
+    }
+
     public void accept( AbsynVisitor visitor, int level ) {
         visitor.visit( this, level );
     }
