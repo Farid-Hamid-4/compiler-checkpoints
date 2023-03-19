@@ -14,8 +14,8 @@ public class ArrayDec extends VarDec {
     }
 
     public String toString(){
-        if(typ.typ == 0) return "bool";
-        if(typ.typ == 1) return "int";
+        if(typ.typ == 0) return "bool[" + Integer.toString(size) + "]";
+        if(typ.typ == 1) return "int[" + Integer.toString(size) + "]";
         if(typ.typ == 2) return "void";
         return null;
     }
