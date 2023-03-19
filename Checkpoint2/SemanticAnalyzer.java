@@ -123,10 +123,8 @@ public class SemanticAnalyzer implements AbsynVisitor {
         indent( level );
         System.out.println("Entering the scope for function " + dec.func + ":");
         
-        ArrayList<NodeType> nodeList = symbolTable.get("global");
-        if(nodeList != null)
-            nodeList.add(new NodeType(dec.func, dec, level));
-
+        insert("global", new NodeType(dec.func, dec, level));
+        
         level++;
         stack.add(dec.func);
         
