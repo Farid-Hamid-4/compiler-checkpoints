@@ -9,6 +9,10 @@ public class SimpleVar extends Var {
         this.name = name;
     }
 
+    public String toString() {
+        return name;
+    }
+
     public void accept( AbsynVisitor visitor, int level ) {
         visitor.visit( this, level );
     }
