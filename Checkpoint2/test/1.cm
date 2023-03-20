@@ -1,0 +1,26 @@
+/* A factorial program that uses a Boolean variable */
+
+void x;
+void y[10];
+bool h[10];
+bool p;
+int z[10];
+int v;
+
+
+void main(void) {
+  int x; 
+  int fac;
+  bool test;
+  void y;
+  x = input();
+  fac = 1;
+  test = x > 1;
+  while (test) {
+    fac = fac * x;
+    x = x - 1;
+    test = x > 1;
+  } 
+
+  output(fac);
+}

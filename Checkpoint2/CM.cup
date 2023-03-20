@@ -117,27 +117,27 @@ varDeclaration ::= typeSpecifier:ts ID:id SEMI
                | typeSpecifier:ts ID:id LBRACKET NUM:n RBRACKET SEMI
                   {: RESULT = new ArrayDec(tsleft, tsright, ts, id, Integer.parseInt(n)); :}
                | typeSpecifier:ts ID:id LBRACKET error:e SEMI
-                  {: parser.report_error("Invalid array declaration in line " + (eleft + 1) + ", column " + (eright + 1) + ": missing array size.", e);
+                  {: parser.report_error("Invalid array declaration in line " + (eleft + 1) + ", column " + (eright + 1) + ": missing array size.\n", e);
                      RESULT = new SimpleDec(tsleft, tsright, ts, null);
                   :}
                | typeSpecifier:ts ID:id LBRACKET NUM:n error:e SEMI
-                  {: parser.report_error("Invalid array declaration in line " + (eleft + 1) + ", column " + (eright + 1) + ": missing right bracket.", e); 
+                  {: parser.report_error("Invalid array declaration in line " + (eleft + 1) + ", column " + (eright + 1) + ": missing right bracket.\n", e); 
                      RESULT = new SimpleDec(tsleft, tsright, ts, null);
                   :}
                | typeSpecifier:ts ID:id error:e RBRACKET
-                  {: parser.report_error("Invalid array declaration in line " + (eleft + 1) + ", column " + (eright + 1) + ": missing left bracket.", e); 
+                  {: parser.report_error("Invalid array declaration in line " + (eleft + 1) + ", column " + (eright + 1) + ": missing left bracket.\n", e); 
                      RESULT = new SimpleDec(tsleft, tsright, ts, null);
                   :}
                | typeSpecifier:ts ID:id error:e SEMI
-                  {: parser.report_error("Invalid variable declaration in line " + (eleft + 1) + ", column " + (eright + 1) + ": unexpected argument before semicolon.", e); 
+                  {: parser.report_error("Invalid variable declaration in line " + (eleft + 1) + ", column " + (eright + 1) + ": unexpected argument before semicolon.\n", e); 
                      RESULT = new SimpleDec(tsleft, tsright, ts, null);
                   :}
                | typeSpecifier:ts error:e SEMI
-                  {: parser.report_error("Invalid variable declaration in line " + (eleft + 1) + ", column " + (eright + 1) + ": invalid variable name.", e); 
+                  {: parser.report_error("Invalid variable declaration in line " + (eleft + 1) + ", column " + (eright + 1) + ": invalid variable name.\n", e); 
                      RESULT = new SimpleDec(tsleft, tsright, ts, null);
                   :}
                | error:e SEMI
-                  {: parser.report_error("Invalid variable declaration in line " + (eleft + 1) + ", column " + (eright + 1) + ": type not of (bool, void, int) or invalid naming convention.", e); 
+                  {: parser.report_error("Invalid variable declaration in line " + (eleft + 1) + ", column " + (eright + 1) + ": type not of (bool, void, int) or invalid naming convention.\n", e); 
                      RESULT = new SimpleDec(eleft, 0, new NameTy(eleft, 0, NameTy.NULL), null);
                   :}
                ;
@@ -153,23 +153,23 @@ typeSpecifier  ::= BOOL:b
 funDeclaration ::= typeSpecifier:ts ID:id LPAREN params:ps RPAREN compoundStatement:cs
                   {: RESULT = new FunctionDec(tsleft, tsright, ts, id, ps, cs); :}
                | typeSpecifier:ts ID:id LPAREN error:e compoundStatement:cs
-                  {: parser.report_error("Invalid function declaration in line " + (eleft + 1) + ", column " + (eright + 1) + ": incorrect parameters (MUST HAVE void for empty parameters).", e);
+                  {: parser.report_error("Invalid function declaration in line " + (eleft + 1) + ", column " + (eright + 1) + ": incorrect parameters (MUST HAVE void for empty parameters).\n", e);
                      RESULT = new FunctionDec(tsleft, tsright, ts, id, null, cs);
                   :}
                | typeSpecifier:ts ID:id error:e compoundStatement:cs
-                  {: parser.report_error("Invalid function declaration in line " + (eleft + 1) + ", column " + (eright + 1) + ": missing left parenthesis.", e);
+                  {: parser.report_error("Invalid function declaration in line " + (eleft + 1) + ", column " + (eright + 1) + ": missing left parenthesis.\n", e);
                      RESULT = new FunctionDec(tsleft, tsright, ts, id, null, cs);
                   :}
                | typeSpecifier:ts ID:id LPAREN params:ps error:e compoundStatement:cs
-                  {: parser.report_error("Invalid function declaration in line " + (eleft + 1) + ", column " + (eright + 1) + ": missing right parenthesis.", e);
+                  {: parser.report_error("Invalid function declaration in line " + (eleft + 1) + ", column " + (eright + 1) + ": missing right parenthesis.\n", e);
                      RESULT = new FunctionDec(tsleft, tsright, ts, id, null, cs);
                   :}
                | typeSpecifier:ts error:e compoundStatement:cs
-                  {: parser.report_error("Invalid function declaration in line " + (eleft + 1) + ", column " + (eright + 1) + ": missing function name.", e);
+                  {: parser.report_error("Invalid function declaration in line " + (eleft + 1) + ", column " + (eright + 1) + ": missing function name.\n", e);
                      RESULT = new FunctionDec(tsleft, tsright, ts, null, null, cs);
                   :}
                | error:e ID:id LPAREN RPAREN compoundStatement:cs
-                  {: parser.report_error("Invalid function declaration in line " + (eleft + 1) + ", column " + (eright + 1) + ": missing function type.", e);
+                  {: parser.report_error("Invalid function declaration in line " + (eleft + 1) + ", column " + (eright + 1) + ": missing function type.\n", e);
                      RESULT = new FunctionDec(eleft, 0, new NameTy(eleft, 0, NameTy.NULL), id, null, cs);
                   :}
                ;
@@ -177,13 +177,13 @@ funDeclaration ::= typeSpecifier:ts ID:id LPAREN params:ps RPAREN compoundStatem
 funPrototype   ::= typeSpecifier:ts ID:id LPAREN params:ps RPAREN SEMI
                   {: RESULT = new FunctionDec(tsleft, tsright, ts, id, ps, null); :}
                | typeSpecifier:ts ID:id LPAREN params:ps RPAREN error:e SEMI
-                  {: parser.report_error("Invalid function prototype: missing semicolon", e); :}
+                  {: parser.report_error("Invalid function prototype: missing semicolon\n", e); :}
                | typeSpecifier:ts ID:id error:e params:ps RPAREN SEMI
-                  {: parser.report_error("Invalid function prototype: missing left parenthesis", e); :}
+                  {: parser.report_error("Invalid function prototype: missing left parenthesis\n", e); :}
                | typeSpecifier:ts ID:id LPAREN params:ps error:e SEMI
-                  {: parser.report_error("Invalid function prototype: missing right parenthesis", e); :}
+                  {: parser.report_error("Invalid function prototype: missing right parenthesis\n", e); :}
                | typeSpecifier:ts ID:id LPAREN error:e RPAREN SEMI
-                  {: parser.report_error("Invalid function prototype: incorrect parameters (MUST HAVE void for empty parameters) in line " + (eleft + 1) + ", column " + (eright + 1), e); 
+                  {: parser.report_error("Invalid function prototype: incorrect parameters (MUST HAVE void for empty parameters) in line " + (eleft + 1) + ", column " + (eright + 1) + "\n", e); 
                   RESULT = new FunctionDec(tsleft, tsright, ts, id, null, null); 
                   :}
                ;
@@ -268,31 +268,31 @@ selectionStatement   ::= IF:i LPAREN expression:e RPAREN statement:s
                      | IF:i LPAREN expression:e RPAREN statement:s1 ELSE statement:s2
                         {: RESULT = new IfExp(ileft, iright, e, s1, s2); :}
                      | IF:i LPAREN error:e expression:exp RPAREN statement:s1 ELSE statement:s2
-                        {: parser.report_error("Invalid if statement in line " + (eleft + 1) + " at column " + (eright + 1) + " invalid syntax after '('.", e); 
+                        {: parser.report_error("Invalid if statement in line " + (eleft + 1) + " at column " + (eright + 1) + " invalid syntax after '('.\n", e); 
                         RESULT = new IfExp(ileft, iright, exp, s1, s2);
                         :}
                      | IF:i LPAREN error:e RPAREN statement:s1 ELSE statement:s2
-                        {: parser.report_error("Invalid if statement in line " + (eleft + 1) + " at column " + (eright + 1) + " invalid conditional statement.", e); 
+                        {: parser.report_error("Invalid if statement in line " + (eleft + 1) + " at column " + (eright + 1) + " invalid conditional statement.\n", e); 
                         RESULT = new IfExp(ileft, iright, null, s1, s2);
                         :}
                      | IF:i LPAREN expression:exp RPAREN error:e statement:s1 ELSE statement:s2
-                        {: parser.report_error("Invalid if statement in line " + (eleft + 1) + " at column " + (eright + 1) + " invalid syntax after ')'.", e); 
+                        {: parser.report_error("Invalid if statement in line " + (eleft + 1) + " at column " + (eright + 1) + " invalid syntax after ')'.\n", e); 
                            RESULT = new IfExp(ileft, iright, exp, s1, s2);
                         :}
                      | IF:i LPAREN expression:exp RPAREN statement:s1 ELSE error:e statement:s2
-                        {: parser.report_error("Invalid if statement in line " + (eleft + 1) + " at column " + (eright + 1) + " invalid syntax after else.", e); 
+                        {: parser.report_error("Invalid if statement in line " + (eleft + 1) + " at column " + (eright + 1) + " invalid syntax after else.\n", e); 
                            RESULT = new IfExp(ileft, iright, exp, s1, s2);
                         :}
                      | IF:i LPAREN error:e RPAREN statement:s
-                        {: parser.report_error("Invalid if statement in line " + (eleft + 1) + " at column " + (eright + 1) + " invalid conditional statement.", e); 
+                        {: parser.report_error("Invalid if statement in line " + (eleft + 1) + " at column " + (eright + 1) + " invalid conditional statement.\n", e); 
                            RESULT = new IfExp(ileft, iright, null, s, new NilExp(ileft, iright));
                          :}
                      | IF:i LPAREN expression:exp RPAREN error:e statement:s
-                        {: parser.report_error("Invalid if statement in line " + (eleft + 1) + " at column " + (eright + 1) + " invalid syntax after ')'.", e); 
+                        {: parser.report_error("Invalid if statement in line " + (eleft + 1) + " at column " + (eright + 1) + " invalid syntax after ')'.\n", e); 
                            RESULT = new IfExp(ileft, iright, exp, s, new NilExp(ileft, iright));
                         :}
                      | IF:i error:e LPAREN expression:exp RPAREN statement:s
-                        {: parser.report_error("Invalid if statement in line " + (eleft + 1) + " at column " + (eright + 1) + " invalid syntax before '('.", e); 
+                        {: parser.report_error("Invalid if statement in line " + (eleft + 1) + " at column " + (eright + 1) + " invalid syntax before '('.\n", e); 
                            RESULT = new IfExp(ileft, iright, exp, s, new NilExp(ileft, iright));
                         :}
                      ;
@@ -300,15 +300,15 @@ selectionStatement   ::= IF:i LPAREN expression:e RPAREN statement:s
 iterationStatement   ::= WHILE:w LPAREN expression:e RPAREN statement:s 
                         {: RESULT = new WhileExp(wleft, wright, e, s); :}
                      | WHILE:w LPAREN error:e RPAREN statement:s
-                        {: parser.report_error("Invalid while statement in line " + (eleft + 1) + " at column " + (eright + 1) + " invalid conditional statement.", e); 
+                        {: parser.report_error("Invalid while statement in line " + (eleft + 1) + " at column " + (eright + 1) + " invalid conditional statement.\n", e); 
                            RESULT = new WhileExp(wleft, wright, null, s);
                         :}
                      | WHILE:w error:e LPAREN expression:exp RPAREN statement:s
-                        {: parser.report_error("Invalid while statement in line " + (eleft + 1) + " at column " + (eright + 1) + " invalid syntax before '(''.", e); 
+                        {: parser.report_error("Invalid while statement in line " + (eleft + 1) + " at column " + (eright + 1) + " invalid syntax before '(''.\n", e); 
                            RESULT = new WhileExp(wleft, wright, exp, s);
                         :}
                      | WHILE:w LPAREN expression:exp RPAREN error:e statement:s
-                        {: parser.report_error("Invalid while statement in line " + (eleft + 1) + " at column " + (eright + 1) + " invalid syntax after ')'.", e); 
+                        {: parser.report_error("Invalid while statement in line " + (eleft + 1) + " at column " + (eright + 1) + " invalid syntax after ')'.\n", e); 
                            RESULT = new WhileExp(wleft, wright, exp, s);
                         :}
                      ;
@@ -318,15 +318,15 @@ returnStatement   ::= RETURN:r SEMI
                   | RETURN:r expression:e SEMI
                      {: RESULT = new ReturnExp(rleft, rright, e); :}
                   | RETURN:r expression:exp error:e SEMI
-                     {: parser.report_error("Invalid return expression before ';' in line " + (eleft + 1) + " at column " + (eright + 1), e); 
+                     {: parser.report_error("Invalid return expression before ';' in line " + (eleft + 1) + " at column " + (eright + 1) + "\n", e); 
                         RESULT = new ReturnExp(rleft, rright, exp);
                      :}
                   | RETURN:r SEMI error:e
-                     {: parser.report_error("Invalid return expression after ';' in line " + (rleft + 1) + " at column " + rright + ": missing semicolon.", null); 
+                     {: parser.report_error("Invalid return expression after ';' in line " + (rleft + 1) + " at column " + rright + ": missing semicolon.\n", null); 
                         RESULT = new ReturnExp(rleft, rright, new NilExp(rleft, rright));
                      :}
                   | RETURN:r error:e
-                     {: parser.report_error("Invalid return expression in line " + (rleft + 1) + " at column " + rright + ": missing semicolon.", null); 
+                     {: parser.report_error("Invalid return expression in line " + (rleft + 1) + " at column " + rright + ": missing semicolon.\n", null); 
                         RESULT = new ReturnExp(rleft, rright, new NilExp(rleft, rright));
                      :}
                   ;

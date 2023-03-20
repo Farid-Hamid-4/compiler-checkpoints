@@ -14,4 +14,9 @@ public class AssignExp extends Exp {
     public void accept( AbsynVisitor visitor, int level ) {
         visitor.visit( this, level );
     }
+
+    public String VarType() {
+        SimpleVar variable = (SimpleVar) lhs.variable;
+        return variable.toString();
+    }
 }

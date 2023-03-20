@@ -1,0 +1,17 @@
+Entering the global scope:
+    Entering the scope for function main:
+        Entering a new block:
+        Leaving the block
+        x: int
+        fac: int
+        test: bool
+        y: int
+    Leaving the function scope
+    x: int
+    y: int[10]
+    h: bool[10]
+    p: bool
+    z: int[10]
+    v: int
+    main: (void) -> void
+Leaving the global scope

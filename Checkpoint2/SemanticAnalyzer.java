@@ -41,20 +41,46 @@ public class SemanticAnalyzer implements AbsynVisitor {
         }
     }
 
-    public boolean lookup(String name, String type) {
+    public NodeType lookup(String name, int row, int col) {
+        NodeType node = nodeExists(name);
+
+        return node;
+    }
+    
+    public NodeType nodeExists(String name){
+        // If stack is not currently global, then don't check global. Else, check global
         Iterator<String> scope = stack.iterator();
+
+        if (!stack.peek().equals("global"))
+            scope.next();
+
         while( scope.hasNext() ) {
             ArrayList<NodeType> list = symbolTable.get(scope.next());
             if(list != null) {
                 for(int i = 0; i < list.size(); i++) {
                     if(list.get(i).name.equals(name)) {
-                        System.err.println("Error: " + type + " " + name + " has already been declared on line " + (list.get(i).def.row + 1) + ", column " + (list.get(i).def.col + 1));
-                        return true;
+                        return list.get(i);
                     }
                 }
             }
         }
-        return false;
+        return null;
+    }
+
+    public boolean isDeclared(String name, String type, int row, int col){
+        NodeType node = lookup(name, row, col);
+        if (node == null)
+            return false;
+        System.err.println("Error in line " + row + ", column " + col + ": " + type + " Redeclaration");
+        System.err.println(type + " " + name + " has already been declared on line " + (node.def.row + 1) + ", column " + (node.def.col + 1) + "\n");
+        return true;
+    }
+
+    public boolean isDefined(String name, int row, int col){
+        NodeType node = lookup(name, row, col);
+        if (node != null)
+            return false;
+        return true;
     }
 
     public void delete() {
@@ -72,27 +98,38 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
 
     public void visit( ArrayDec dec, int level ) {
-        NodeType symbol = new NodeType(dec.name, dec, level);
-
-        if(lookup(dec.name, "array variable") == false) {
+        if(isDeclared(dec.name, "Array variable", dec.row+1, dec.col+1) == false) {
+            if (dec.typ.typ == 2){
+                System.err.println("Error in line " + (dec.row + 1) + ", column " + (dec.col + 1) + ": Invalid Array Variable Declaration Type (VOID)");
+                System.err.println("Instead expected type (BOOL, INT) got VOID. Changing VOID -> INT\n");
+                dec.typ.typ = 1;
+            }
+            NodeType symbol = new NodeType(dec.name, dec, level);
             insert(stack.peek(), symbol);
         }
     }
 
     public void visit ( AssignExp exp, int level ) {
+        System.err.println("AssignExp");
         exp.lhs.accept( this, level );
         exp.rhs.accept( this, level );
+        
+        NodeType lhs = nodeExists(((SimpleVar) exp.lhs.variable).name);
+        
+        //isDefined(lhs.name, "Variable", lhs.row, lhs.col);
+        System.err.println("VAR " + lhs.name);
+        System.err.println("Type is: " + lhs.def.getType());
+
     }
 
     public void visit ( BoolExp exp, int level ) {
+        System.err.println("Bool Exp");
     }
 
     public void visit ( CallExp exp, int level ) {
-        ExpList argsList = exp.args;
-        while( argsList != null ) {
-            argsList.head.accept( this, level );
-            argsList = argsList.tail;
-        }
+        System.err.println("CallExp");
+        if (exp.args != null)
+            exp.args.accept(this, level);
     }
 
     public void visit ( CompoundExp exp, int level ) {
@@ -101,11 +138,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
           varDecList.head.accept( this, level );
           varDecList = varDecList.tail;
         }
-        ExpList expList = exp.exps;
-        while( expList != null ) {
-            expList.head.accept( this, level );
-            expList = expList.tail;
-        }
+        exp.exps.accept(this, level);
     }
 
     public void visit ( DecList decList, int level ) {
@@ -116,6 +149,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
 
     public void visit ( ExpList expList, int level ) {
+        System.err.println("ExpList");
         while( expList != null ) {
             expList.head.accept( this, level );
             expList = expList.tail;
@@ -123,7 +157,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
 
     public void visit ( FunctionDec dec, int level ) {
-        if(lookup(dec.func, "function")) return;
+        if(isDeclared(dec.func, "Function", dec.row+1, dec.col+1)) return;
 
         level++;
         indent( level );
@@ -151,6 +185,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
 
     public void visit ( IfExp exp, int level ) {
+        System.err.println("IfExp");
         indent( level );
         System.out.println("Entering a new block:");
 
@@ -179,33 +214,47 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
 
     public void visit ( IntExp exp, int level ) {
+        System.err.println("IntExp");
     }
 
     public void visit ( NameTy type, int level ) {
+        System.err.println("Namety");
     }
 
     public void visit ( NilExp exp, int level ) {
+        System.err.println("NilExp");
     }
 
     public void visit ( OpExp exp, int level ) {
+        System.err.println("OpExp");
         if ( exp.left != null )
             exp.left.accept( this, level );
         exp.right.accept( this, level );
     }
 
     public void visit ( ReturnExp expr, int level ) {
+        System.err.println("ReturnExp");
         if ( expr.exp != null )
             expr.exp.accept( this, level );
     }
 
     public void visit ( SimpleDec dec, int level ) {
-        NodeType symbol = new NodeType(dec.name, dec, level);
-
-        if (lookup(dec.name, "variable") == false)
+        if (isDeclared(dec.name, "Variable", dec.row+1, dec.col+1) == false){
+            if (dec.typ.typ == 2){
+                System.err.println("Error in line " + (dec.row + 1) + ", column " + (dec.col + 1) + ": Invalid Variable Declaration Type (VOID)");
+                System.err.println("Instead expected type (BOOL, INT) got VOID. Changing VOID -> INT\n");
+                dec.typ.typ = 1;
+            }
+            NodeType symbol = new NodeType(dec.name, dec, level);
             insert(stack.peek(), symbol);
+        }
     }
 
     public void visit ( SimpleVar var, int level ) {
+        // Check if variable has been declared
+        if (isDefined(var.name, var.row+1, var.col+1)){
+            System.err.println("Error in line " + (var.row + 1) + ", column " + (var.col + 1) + ": Invalid use of undefined variable " + var.name + "\n");
+        }
     }
 
     public void visit ( VarDecList varDecList, int level ) {
@@ -216,9 +265,11 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
 
     public void visit ( VarExp exp, int level ) {
+        exp.variable.accept(this, level);
     }
 
     public void visit ( WhileExp exp, int level ) {
+        System.err.println("While Exp");
         indent( level );
         System.out.println("Entering a new block:");
         
