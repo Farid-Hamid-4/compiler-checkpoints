@@ -4,6 +4,12 @@ import java.util.Stack;
 import java.util.Iterator;
 import java.util.ArrayList;
 
+/* TO-DO 
+ 1. If a block scope is recognized, but contains no variable declarations. Then an Entering and Leaving a block will be printed with empty content.
+ 2. Get the type of the Exp for type checking.
+ 3. Look over function undefined() to check if this is a necessary function
+*/
+
 public class SemanticAnalyzer implements AbsynVisitor {
 
     public HashMap<String, ArrayList<NodeType>> symbolTable;
@@ -68,7 +74,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
     public void visit( ArrayDec dec, int level ) {
         NodeType symbol = new NodeType(dec.name, dec, level);
 
-        if (lookup(dec.name, "array variable") == false) {
+        if(lookup(dec.name, "array variable") == false) {
             insert(stack.peek(), symbol);
         }
     }
