@@ -45,10 +45,21 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
     public NodeType lookup(String name, int row, int col) {
         NodeType node = nodeExists(name);
-
         return node;
     }
     
+    public NodeType funcExists(String name){
+        ArrayList<NodeType> list = symbolTable.get("global");
+        if(list != null) {
+            for(int i = 0; i < list.size(); i++) {
+                if(list.get(i).name.equals(name)) {
+                    return list.get(i);
+                }
+            }
+        }
+        return null;
+    }
+
     public NodeType nodeExists(String name){
         // If stack is not currently global, then don't check global. Else, check global
         Iterator<String> scope = stack.iterator();
@@ -58,6 +69,16 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
         while( scope.hasNext() ) {
             ArrayList<NodeType> list = symbolTable.get(scope.next());
+            if(list != null) {
+                for(int i = 0; i < list.size(); i++) {
+                    if(list.get(i).name.equals(name)) {
+                        return list.get(i);
+                    }
+                }
+            }
+        }
+        if (!stack.peek().equals("global")){
+            ArrayList<NodeType> list = symbolTable.get("global");
             if(list != null) {
                 for(int i = 0; i < list.size(); i++) {
                     if(list.get(i).name.equals(name)) {
@@ -87,11 +108,58 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
     public int retType(VarExp exp){
         int retType = -1;
-        if (exp instanceof absyn.VarExp){
+        if (exp.variable instanceof SimpleVar){
             NodeType node = nodeExists(((SimpleVar)exp.variable).name);
             retType = node.def.getType();
-        }
+        } else retType = exp.variable.getType();
+
         return retType;
+    }
+
+    public int varType(VarExp exp){
+        int varType = -1;
+        NodeType node = null;
+
+        if (exp.variable instanceof SimpleVar) node = nodeExists(((SimpleVar)exp.variable).name);
+        else if (exp.variable instanceof IndexVar) node = nodeExists(((IndexVar)exp.variable).name);
+        if (node != null) return node.def.getType();
+
+        System.err.println("Error in line " + (exp.row + 1) + ", column " + (exp.col + 1) + ": Invalid use of undefined variable " + ((SimpleVar)exp.variable).name + "\n");
+        
+        return varType;
+    }
+    
+    public int evaluateExp(Exp exp){
+        int type = -1;
+        if (exp instanceof OpExp){
+            int lhsType = evaluateExp(((OpExp) exp).left);
+            int rhsType = evaluateExp(((OpExp) exp).right);
+            
+            
+            if (lhsType != rhsType)
+                System.err.println("Error in line " + (exp.row + 1) + ", column " + (exp.col + 1) + " Incompatible types: " + TYPES[lhsType] + " cannot be converted to " + TYPES[rhsType]);
+            else {
+                type = lhsType;
+                if (((OpExp) exp).op < 5){
+                    if (type != 1) {
+                        System.err.println("Error in line " + (exp.row + 1) + ", column " + (exp.col + 1) + " performing arithmetic operation on invalid types: " + TYPES[type]);
+                        return -1;
+                    }
+                } else {
+                    type = 0;
+                }
+            }
+        } else if (exp instanceof CallExp){
+            NodeType node = funcExists(((CallExp) exp).func);
+
+            if (node != null)
+                type = ((FunctionDec) node.def).result.typ;
+
+            //System.err.println("CallExp Evaluates to: " + type);
+        } else if (exp instanceof VarExp){
+            type = varType((VarExp) exp);
+        } else type = exp.getType();
+        return type;
     }
 
     public int checkLeftOp(OpExp expLeft){
@@ -104,6 +172,40 @@ public class SemanticAnalyzer implements AbsynVisitor {
             type = expLeft.right.getType();
         }
         return type;
+    }
+
+    public int checkCallExp(CallExp exp){
+        NodeType node = funcExists(exp.func);
+        if (node == null){
+            System.err.println("Error in line " + (exp.row + 1) + ", column " + (exp.col + 1) + ": Invalid CallExp to undefined function "  + exp.func + "()\n");
+            return -1;
+        }
+
+        // Expected params
+        VarDecList params = ((FunctionDec) node.def).params;
+        if (exp.args == null && params == null){
+            return 2;
+        } else if (exp.args == null){
+            System.err.println("Error in line " + (exp.row + 1) + ", column " + (exp.col + 1) + ": Invalid CallExp sending (VOID) when expecting ("  + params.toString().toUpperCase() + ")\n");
+            return -1;
+        }
+
+        ExpList expList = (ExpList) exp.args;
+        while( params != null && expList != null) {
+            int expType = evaluateExp(expList.head);
+            if (params.head.getType() != expType){
+                System.err.println("Error in line " + (exp.row + 1) + ", column " + (exp.col + 1) + ": Invalid CallExp makes use of " + TYPES[expType] + " when expected: " + params.head.toString().toUpperCase() + "\n");
+                return -1;
+            }
+            expList = expList.tail;
+            params = params.tail;
+        }
+        if (params != null || expList != null) {
+            System.err.println("Error in line " + (exp.row + 1) + ", column " + (exp.col + 1) + ": Invalid CallExp argument length\n");
+            return -1;
+        }
+
+        return ((FunctionDec) node.def).result.typ;
     }
 
     public void delete() {
@@ -134,32 +236,23 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
     public void visit ( AssignExp exp, int level ) {
         exp.lhs.accept( this, level );
-        NodeType lhs = nodeExists(((SimpleVar) exp.lhs.variable).name);
-        //if (lhs == null){
-            //System.err.println("Error in line " + (exp.lhs.row+1) + ", column " + (exp.lhs.col+1) + ": Variable " + ((SimpleVar) exp.lhs.variable).name + " .");
-        //}
-        if (exp.rhs instanceof absyn.OpExp)
-            exp.rhs.accept( this, level );
-        else {
-            exp.rhs.accept( this, level );
-            int rhsType = exp.rhs.getType();
-            if (exp.rhs instanceof absyn.VarExp){
-                rhsType = retType((VarExp) exp.rhs);
-            }
-            if (lhs.def.getType() != rhsType){
-                System.err.println("Error in line " + exp.row + ", column " + exp.col + " Incompatible types: " + TYPES[lhs.def.getType()] + " cannot be converted to " + TYPES[rhsType]);
-            }
+        exp.rhs.accept( this, level );
+        int lhsType = varType(exp.lhs);
+        int rhsType = evaluateExp(exp.rhs);
+
+        if (lhsType != rhsType && lhsType != -1 && rhsType != -1){
+            System.err.println("Error in line " + (exp.row + 1) + ", column " + (exp.col + 1) + " Incompatible types: " + TYPES[lhsType] + " cannot be converted to " + TYPES[rhsType] + "\n");
         }
     }
 
     public void visit ( BoolExp exp, int level ) {
-        System.err.println("Bool Exp");
     }
 
     public void visit ( CallExp exp, int level ) {
-        System.err.println("CallExp");
         if (exp.args != null)
             exp.args.accept(this, level);
+
+        checkCallExp(exp);
     }
 
     public void visit ( CompoundExp exp, int level ) {
@@ -244,60 +337,17 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
 
     public void visit ( IntExp exp, int level ) {
-        //System.err.println("IntExp");
     }
 
     public void visit ( NameTy type, int level ) {
-        //System.err.println("Namety");
     }
 
     public void visit ( NilExp exp, int level ) {
-        //System.err.println("NilExp");
     }
 
     public void visit ( OpExp exp, int level ) {
-
-        int lhsType = -1;
-        int rhsType = -1;
-        
         exp.right.accept( this, level );
-        if (exp.right instanceof absyn.VarExp){
-            NodeType rhs = nodeExists(exp.right.toString());
-            rhsType = rhs.def.getType();
-        } else {
-            rhsType = exp.right.getType();
-        }
-
-        // Check if left is OpExp
-        if (exp.left instanceof absyn.OpExp){
-            OpExp left = (OpExp) exp.left;
-            while (left.left instanceof absyn.OpExp){
-                left.right.accept( this, level );
-                lhsType = checkLeftOp(left);
-                if (lhsType != rhsType && lhsType != -1 && rhsType != -1){
-                    System.err.println("Error in line " + exp.row + ", column " + exp.col + " Incompatible types: " + TYPES[lhsType] + " cannot be converted to " + TYPES[rhsType]);
-                    return;
-                }
-                left = (OpExp) left.left;
-            }
-            System.err.println(left.left);
-            left.right.accept( this, level );
-            lhsType = checkLeftOp(left);
-            if (lhsType != rhsType && lhsType != -1 && rhsType != -1){
-                System.err.println("Error in line " + exp.row + ", column " + exp.col + " Incompatible types: " + TYPES[lhsType] + " cannot be converted to " + TYPES[rhsType]);
-                return;
-            }
-        } else if (exp.left instanceof absyn.VarExp){
-            NodeType lhs = nodeExists(exp.left.toString());
-            lhsType = lhs.def.getType();
-            
-        } else {
-            lhsType = exp.left.getType();
-        }
-        if (lhsType != rhsType && lhsType != -1 && rhsType != -1){
-            System.err.println("Error in line " + exp.row + ", column " + exp.col + " Incompatible types: " + TYPES[lhsType] + " cannot be converted to " + TYPES[rhsType]);
-            return;
-        }
+        exp.left.accept( this, level );
     }
 
     public void visit ( ReturnExp expr, int level ) {
@@ -329,7 +379,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
             }
 
             if (funcType != expType)
-                System.err.println("Error in line " + (expr.row + 1) + ", column " + (expr.col + 1) + ": Function Type " + TYPES[((FunctionDec) func.def).result.typ] + " cannot return " + TYPES[expType]);
+                System.err.println("Error in line " + (expr.row + 1) + ", column " + (expr.col + 1) + ": Function Type " + TYPES[((FunctionDec) func.def).result.typ] + " cannot return " + TYPES[expType] + "\n");
         }
             
     }
@@ -348,9 +398,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
     public void visit ( SimpleVar var, int level ) {
         // Check if variable has been declared
-        if (isDefined(var.name, var.row+1, var.col+1)){
-            System.err.println("Error in line " + (var.row + 1) + ", column " + (var.col + 1) + ": Invalid use of undefined variable " + var.name + "\n");
-        }
+        isDefined(var.name, var.row+1, var.col+1);
     }
 
     public void visit ( VarDecList varDecList, int level ) {

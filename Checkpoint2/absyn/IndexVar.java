@@ -11,6 +11,10 @@ public class IndexVar extends Var {
         this.index = index;
     }
 
+    public int getType(){
+        return index.getType();
+    }
+    
     public void accept( AbsynVisitor visitor, int level ) {
         visitor.visit( this, level );
     }

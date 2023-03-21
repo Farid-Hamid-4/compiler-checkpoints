@@ -1,8 +1,10 @@
 Entering the global scope:
     Entering the scope for function main:
+        Entering a new block:
+        Leaving the block
         x: int
-        y: int
-        f: bool
+        fac: int
+        test: bool
     Leaving the function scope
-    main: (void) -> int
+    main: (void) -> void
 Leaving the global scope

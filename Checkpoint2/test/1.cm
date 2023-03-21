@@ -1,9 +1,15 @@
 /* A factorial program that uses a Boolean variable */
 
+int x;
+int input(int l, int o);
+
 int main(void) {
-  int x; 
   int y;
-  bool f;
-  return x+True+y;
+  int l;
+  int h[10];
+  bool f[5];
+  bool g;
+  g = input(y, y);
+  return x+true+y;
 }
 
