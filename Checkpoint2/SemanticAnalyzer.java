@@ -16,6 +16,8 @@ public class SemanticAnalyzer implements AbsynVisitor {
     public Stack<String> stack;
     public int nest = 0;
 
+    public String[] TYPES = {"BOOL", "INT", "VOID"};
+
     final static int SPACES = 4;
 
     public SemanticAnalyzer() {
@@ -110,18 +112,23 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
 
     public void visit ( AssignExp exp, int level ) {
-        System.err.println("AssignExp");
         exp.lhs.accept( this, level );
         NodeType lhs = nodeExists(((SimpleVar) exp.lhs.variable).name);
-        if (lhs == null){
-            System.err.println("Somehow missing left hand side of operation?");
-        }
+        //if (lhs == null){
+            //System.err.println("Error in line " + (exp.lhs.row+1) + ", column " + (exp.lhs.col+1) + ": Variable " + ((SimpleVar) exp.lhs.variable).name + " .");
+        //}
         if (exp.rhs instanceof absyn.OpExp)
             exp.rhs.accept( this, level );
         else {
             exp.rhs.accept( this, level );
-            if (lhs.def.getType() == exp.rhs.getType()){
-                System.err.println("LHS: " + lhs.def.getType() + " RHS: " + exp.rhs.getType());
+            int rhsType = exp.rhs.getType();
+            if (exp.rhs instanceof absyn.VarExp){
+                VarExp var = (VarExp)exp.rhs;
+                NodeType rhs = nodeExists(((SimpleVar)var.variable).name);
+                rhsType = rhs.def.getType();
+            }
+            if (lhs.def.getType() != rhsType){
+                System.err.println("Error in line " + exp.row + ", column " + exp.col + " Incompatible types: " + TYPES[lhs.def.getType()] + " cannot be converted to " + TYPES[rhsType]);
             }
         }
     }
@@ -153,7 +160,6 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
 
     public void visit ( ExpList expList, int level ) {
-        System.err.println("ExpList");
         while( expList != null ) {
             expList.head.accept( this, level );
             expList = expList.tail;
@@ -218,85 +224,52 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
 
     public void visit ( IntExp exp, int level ) {
-        System.err.println("IntExp");
+        //System.err.println("IntExp");
     }
 
     public void visit ( NameTy type, int level ) {
-        System.err.println("Namety");
+        //System.err.println("Namety");
     }
 
     public void visit ( NilExp exp, int level ) {
-        System.err.println("NilExp");
+        //System.err.println("NilExp");
     }
 
     public void visit ( OpExp exp, int level ) {
-        System.err.println("OpExp");
 
         int lhsType = -1;
         int rhsType = -1;
-        
+
+        exp.right.accept( this, level );
+        if (exp.right instanceof absyn.VarExp){
+            NodeType rhs = nodeExists(exp.right.toString());
+            rhsType = rhs.def.getType();
+        } else {
+            rhsType = exp.right.getType();
+        }
+
         // Check if left is OpExp
         if (exp.left instanceof absyn.OpExp){
             OpExp left = (OpExp) exp.left;
-            while (left != null){
-                if (left.left instanceof absyn.VarExp){
-                    left.left.accept(this, level);
-                    NodeType lhs = nodeExists(left.left.toString());
-                    System.err.println("Performing: " + left.left + " " + left.op + " " + left.right + ": " + lhs.name);
-                    lhsType = lhs.def.getType();
-                } else if (left.left instanceof absyn.OpExp == false){
-                    lhsType = left.left.getType();
-                }
+            while (left.left instanceof absyn.OpExp){
+                left.right.accept( this, level );
                 if (left.right instanceof absyn.VarExp){
-                    left.right.accept(this, level);
-                    NodeType rhs = nodeExists(left.right.toString());
-                    System.err.println("Performing: " + left.left + " " + left.op + " " + left.right + ": " + rhs.name);
-                    rhsType = rhs.def.getType();
+                    NodeType lhs = nodeExists(exp.right.toString());
+                    lhsType = lhs.def.getType();
                 } else {
-                    rhsType = left.right.getType();
+                    lhsType = left.right.getType();
                 }
-
-                if (lhsType != -1 && rhsType != -1) 
-                    left =  (OpExp) left.left;
-
-                if (lhsType == rhsType)
-                    System.err.println("LHS: " + lhsType + " RHS: " + rhsType);
+                if (lhsType != rhsType){
+                    System.err.println("Error in line " + exp.row + ", column " + exp.col + " Incompatible types: " + TYPES[lhsType] + " cannot be converted to " + TYPES[rhsType]);
+                    return;
+                }
+                left = (OpExp) left.left;
             }
         }
-
-        
-        /*
-        System.err.println("LHS: " + exp.left + " RHS: " + exp.right);
-
-        if ( exp.left != null ){
-            if (exp.left instanceof absyn.VarExp){
-                NodeType lhs = nodeExists(exp.left.toString());
-                System.err.println("Performing: " + exp.left + " " + exp.op + " " + exp.right + ": " + lhs.name);
-                lhsType = lhs.def.getType();
-            } else if (exp.left instanceof absyn.OpExp == false){
-                lhsType = exp.left.getType();
-            }
-            // If accepts operation, it will perform OpExp on that side, so we do not check if it equal YET
-            exp.left.accept( this, level );
-        }
-
-        exp.right.accept( this, level );
-        rhsType = exp.right.getType();
-
-        if (exp.right instanceof absyn.VarExp){
-            NodeType rhs = nodeExists(exp.right.toString());
-            System.err.println("Performing: " + exp.left + " " + exp.op + " " + exp.right + ": " + rhs.name);
-            rhsType = rhs.def.getType();
-        } 
-        
-        System.err.println("")
-        if (lhsType != -1 && lhsType == rhsType){
-            System.err.println("Invalid operation.");
-        }*/
     }
 
     public void visit ( ReturnExp expr, int level ) {
-        System.err.println("ReturnExp");
+        //System.err.println("ReturnExp");
         if ( expr.exp != null )
             expr.exp.accept( this, level );
     }
@@ -332,7 +305,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
 
     public void visit ( WhileExp exp, int level ) {
-        System.err.println("While Exp");
+        //System.err.println("While Exp");
         indent( level );
         System.out.println("Entering a new block:");
         

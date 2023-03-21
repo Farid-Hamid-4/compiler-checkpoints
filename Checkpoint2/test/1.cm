@@ -4,27 +4,10 @@ void main(void) {
   int x; 
   int y;
   bool f;
-  x = 2 + y + x;
+  x = 2 + y;
+  x = f + y;
+  x = f + 2;
+  x = f;
   
 }
 
-
-x = 5 => getType() returns 1
-LHS: x RHS: 5 => 1 = 1
-
-x = 5 + 5
-LHS: x RHS: 5 + 5
-LHS: 5 RHS: 5 => 1 = 1
-
-x = y + z
-LHS: x RHS: y + z
-LHS: y RHS: z => ? = ?
-    => Check SymbolTable for y and z. LHS and RHS
-
-x = 5 + z
-LHS: x RHS: 5 + z
-LHS: 5 RHS: z
-OpExp(OpExp, OpExp)
-
-
-OpExp(OpExp, VarExp) => OpExp(OpExp, VarExp) VarExp
