@@ -20,6 +20,10 @@ public class ArrayDec extends VarDec {
         return null;
     }
 
+    public int getType(){
+        return typ.typ;
+    }
+
     public void accept( AbsynVisitor visitor, int level ) {
         visitor.visit( this, level );
     }

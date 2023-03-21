@@ -1,10 +1,35 @@
 Entering the global scope:
+    Entering the scope for function minloc:
+        Entering a new block:
+            Entering a new block:
+            Leaving the block
+        Leaving the block
+        a: int[0]
+        low: int
+        high: int
+        i: int
+        x: int
+        k: int
+    Leaving the function scope
+    Entering the scope for function sort:
+        Entering a new block:
+            t: int
+        Leaving the block
+        a: int[0]
+        low: int
+        high: int
+        i: int
+        k: int
+    Leaving the function scope
     Entering the scope for function main:
         Entering a new block:
         Leaving the block
-        x: int
-        fac: int
-        test: bool
+        Entering a new block:
+        Leaving the block
+        i: int
     Leaving the function scope
+    x: int[10]
+    minloc: (int[0], int, int) -> int
+    sort: (int[0], int, int) -> void
     main: (void) -> void
 Leaving the global scope

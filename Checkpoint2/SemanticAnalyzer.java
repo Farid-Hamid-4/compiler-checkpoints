@@ -92,7 +92,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
     public boolean isDeclared(String name, String type, int row, int col){
         NodeType node = lookup(name, row, col);
-        if (node == null)
+        if (node == null || node.level == 0)
             return false;
         System.err.println("Error in line " + row + ", column " + col + ": " + type + " Redeclaration");
         System.err.println(type + " " + name + " has already been declared on line " + (node.def.row + 1) + ", column " + (node.def.col + 1) + "\n");
@@ -122,6 +122,8 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
         if (exp.variable instanceof SimpleVar) node = nodeExists(((SimpleVar)exp.variable).name);
         else if (exp.variable instanceof IndexVar) node = nodeExists(((IndexVar)exp.variable).name);
+
+        
         if (node != null) return node.def.getType();
 
         System.err.println("Error in line " + (exp.row + 1) + ", column " + (exp.col + 1) + ": Invalid use of undefined variable " + ((SimpleVar)exp.variable).name + "\n");
@@ -134,7 +136,6 @@ public class SemanticAnalyzer implements AbsynVisitor {
         if (exp instanceof OpExp){
             int lhsType = evaluateExp(((OpExp) exp).left);
             int rhsType = evaluateExp(((OpExp) exp).right);
-            
             
             if (lhsType != rhsType)
                 System.err.println("Error in line " + (exp.row + 1) + ", column " + (exp.col + 1) + " Incompatible types: " + TYPES[lhsType] + " cannot be converted to " + TYPES[rhsType]);
@@ -308,7 +309,6 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
 
     public void visit ( IfExp exp, int level ) {
-        System.err.println("IfExp");
         indent( level );
         System.out.println("Entering a new block:");
 
