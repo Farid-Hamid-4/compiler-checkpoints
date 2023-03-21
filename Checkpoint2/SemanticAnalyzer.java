@@ -112,14 +112,18 @@ public class SemanticAnalyzer implements AbsynVisitor {
     public void visit ( AssignExp exp, int level ) {
         System.err.println("AssignExp");
         exp.lhs.accept( this, level );
-        exp.rhs.accept( this, level );
-        
         NodeType lhs = nodeExists(((SimpleVar) exp.lhs.variable).name);
-        
-        //isDefined(lhs.name, "Variable", lhs.row, lhs.col);
-        System.err.println("VAR " + lhs.name);
-        System.err.println("Type is: " + lhs.def.getType());
-
+        if (lhs == null){
+            System.err.println("Somehow missing left hand side of operation?");
+        }
+        if (exp.rhs instanceof absyn.OpExp)
+            exp.rhs.accept( this, level );
+        else {
+            exp.rhs.accept( this, level );
+            if (lhs.def.getType() == exp.rhs.getType()){
+                System.err.println("LHS: " + lhs.def.getType() + " RHS: " + exp.rhs.getType());
+            }
+        }
     }
 
     public void visit ( BoolExp exp, int level ) {
@@ -227,9 +231,68 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
     public void visit ( OpExp exp, int level ) {
         System.err.println("OpExp");
-        if ( exp.left != null )
+
+        int lhsType = -1;
+        int rhsType = -1;
+        
+        // Check if left is OpExp
+        if (exp.left instanceof absyn.OpExp){
+            OpExp left = (OpExp) exp.left;
+            while (left != null){
+                if (left.left instanceof absyn.VarExp){
+                    left.left.accept(this, level);
+                    NodeType lhs = nodeExists(left.left.toString());
+                    System.err.println("Performing: " + left.left + " " + left.op + " " + left.right + ": " + lhs.name);
+                    lhsType = lhs.def.getType();
+                } else if (left.left instanceof absyn.OpExp == false){
+                    lhsType = left.left.getType();
+                }
+                if (left.right instanceof absyn.VarExp){
+                    left.right.accept(this, level);
+                    NodeType rhs = nodeExists(left.right.toString());
+                    System.err.println("Performing: " + left.left + " " + left.op + " " + left.right + ": " + rhs.name);
+                    rhsType = rhs.def.getType();
+                } else {
+                    rhsType = left.right.getType();
+                }
+
+                if (lhsType != -1 && rhsType != -1) 
+                    left =  (OpExp) left.left;
+
+                if (lhsType == rhsType)
+                    System.err.println("LHS: " + lhsType + " RHS: " + rhsType);
+            }
+        }
+
+        
+        /*
+        System.err.println("LHS: " + exp.left + " RHS: " + exp.right);
+
+        if ( exp.left != null ){
+            if (exp.left instanceof absyn.VarExp){
+                NodeType lhs = nodeExists(exp.left.toString());
+                System.err.println("Performing: " + exp.left + " " + exp.op + " " + exp.right + ": " + lhs.name);
+                lhsType = lhs.def.getType();
+            } else if (exp.left instanceof absyn.OpExp == false){
+                lhsType = exp.left.getType();
+            }
+            // If accepts operation, it will perform OpExp on that side, so we do not check if it equal YET
             exp.left.accept( this, level );
+        }
+
         exp.right.accept( this, level );
+        rhsType = exp.right.getType();
+
+        if (exp.right instanceof absyn.VarExp){
+            NodeType rhs = nodeExists(exp.right.toString());
+            System.err.println("Performing: " + exp.left + " " + exp.op + " " + exp.right + ": " + rhs.name);
+            rhsType = rhs.def.getType();
+        } 
+        
+        System.err.println("")
+        if (lhsType != -1 && lhsType == rhsType){
+            System.err.println("Invalid operation.");
+        }*/
     }
 
     public void visit ( ReturnExp expr, int level ) {

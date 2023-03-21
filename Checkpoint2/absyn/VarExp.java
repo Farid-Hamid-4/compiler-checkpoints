@@ -9,6 +9,14 @@ public class VarExp extends Exp {
         this.variable = variable;
     }
 
+    public int getType(){
+        return variable.getType();
+    }
+
+    public String toString(){
+        return variable.toString();
+    }
+
     public void accept( AbsynVisitor visitor, int level ) {
         visitor.visit( this, level );
     }
