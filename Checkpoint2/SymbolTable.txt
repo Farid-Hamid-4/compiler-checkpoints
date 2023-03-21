@@ -4,5 +4,5 @@ Entering the global scope:
         y: int
         f: bool
     Leaving the function scope
-    main: (void) -> void
+    main: (void) -> int
 Leaving the global scope

@@ -321,11 +321,7 @@ returnStatement   ::= RETURN:r SEMI
                      {: parser.report_error("Invalid return expression before ';' in line " + (eleft + 1) + " at column " + (eright + 1) + "\n", e); 
                         RESULT = new ReturnExp(rleft, rright, exp);
                      :}
-                  | RETURN:r SEMI error:e
-                     {: parser.report_error("Invalid return expression after ';' in line " + (rleft + 1) + " at column " + rright + ": missing semicolon.\n", null); 
-                        RESULT = new ReturnExp(rleft, rright, new NilExp(rleft, rright));
-                     :}
-                  | RETURN:r error:e
+                  | RETURN:r error:e SEMI
                      {: parser.report_error("Invalid return expression in line " + (rleft + 1) + " at column " + rright + ": missing semicolon.\n", null); 
                         RESULT = new ReturnExp(rleft, rright, new NilExp(rleft, rright));
                      :}

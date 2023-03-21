@@ -1,13 +1,9 @@
 /* A factorial program that uses a Boolean variable */
 
-void main(void) {
+int main(void) {
   int x; 
   int y;
   bool f;
-  x = 2 + y;
-  x = f + y;
-  x = f + 2;
-  x = f;
-  
+  return x+True+y;
 }
 

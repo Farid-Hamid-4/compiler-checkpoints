@@ -85,6 +85,27 @@ public class SemanticAnalyzer implements AbsynVisitor {
         return true;
     }
 
+    public int retType(VarExp exp){
+        int retType = -1;
+        if (exp instanceof absyn.VarExp){
+            NodeType node = nodeExists(((SimpleVar)exp.variable).name);
+            retType = node.def.getType();
+        }
+        return retType;
+    }
+
+    public int checkLeftOp(OpExp expLeft){
+        int type = -1;
+        if (expLeft.right instanceof absyn.VarExp){
+            NodeType node = nodeExists(expLeft.right.toString());
+            if (node != null)
+                type = node.def.getType();
+        } else {
+            type = expLeft.right.getType();
+        }
+        return type;
+    }
+
     public void delete() {
         /* Delete local scopes from table */
     }
@@ -123,9 +144,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
             exp.rhs.accept( this, level );
             int rhsType = exp.rhs.getType();
             if (exp.rhs instanceof absyn.VarExp){
-                VarExp var = (VarExp)exp.rhs;
-                NodeType rhs = nodeExists(((SimpleVar)var.variable).name);
-                rhsType = rhs.def.getType();
+                rhsType = retType((VarExp) exp.rhs);
             }
             if (lhs.def.getType() != rhsType){
                 System.err.println("Error in line " + exp.row + ", column " + exp.col + " Incompatible types: " + TYPES[lhs.def.getType()] + " cannot be converted to " + TYPES[rhsType]);
@@ -161,7 +180,8 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
     public void visit ( ExpList expList, int level ) {
         while( expList != null ) {
-            expList.head.accept( this, level );
+            if (expList.head != null)
+                expList.head.accept( this, level );
             expList = expList.tail;
         }
     }
@@ -239,7 +259,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
         int lhsType = -1;
         int rhsType = -1;
-
+        
         exp.right.accept( this, level );
         if (exp.right instanceof absyn.VarExp){
             NodeType rhs = nodeExists(exp.right.toString());
@@ -253,25 +273,65 @@ public class SemanticAnalyzer implements AbsynVisitor {
             OpExp left = (OpExp) exp.left;
             while (left.left instanceof absyn.OpExp){
                 left.right.accept( this, level );
-                if (left.right instanceof absyn.VarExp){
-                    NodeType lhs = nodeExists(exp.right.toString());
-                    lhsType = lhs.def.getType();
-                } else {
-                    lhsType = left.right.getType();
-                }
-                if (lhsType != rhsType){
+                lhsType = checkLeftOp(left);
+                if (lhsType != rhsType && lhsType != -1 && rhsType != -1){
                     System.err.println("Error in line " + exp.row + ", column " + exp.col + " Incompatible types: " + TYPES[lhsType] + " cannot be converted to " + TYPES[rhsType]);
                     return;
                 }
                 left = (OpExp) left.left;
             }
+            System.err.println(left.left);
+            left.right.accept( this, level );
+            lhsType = checkLeftOp(left);
+            if (lhsType != rhsType && lhsType != -1 && rhsType != -1){
+                System.err.println("Error in line " + exp.row + ", column " + exp.col + " Incompatible types: " + TYPES[lhsType] + " cannot be converted to " + TYPES[rhsType]);
+                return;
+            }
+        } else if (exp.left instanceof absyn.VarExp){
+            NodeType lhs = nodeExists(exp.left.toString());
+            lhsType = lhs.def.getType();
+            
+        } else {
+            lhsType = exp.left.getType();
+        }
+        if (lhsType != rhsType && lhsType != -1 && rhsType != -1){
+            System.err.println("Error in line " + exp.row + ", column " + exp.col + " Incompatible types: " + TYPES[lhsType] + " cannot be converted to " + TYPES[rhsType]);
+            return;
         }
     }
 
     public void visit ( ReturnExp expr, int level ) {
+        // Get type of function
+        NodeType func = symbolTable.get("global").get(symbolTable.get("global").size()-1);
+        int funcType = ((FunctionDec) func.def).result.typ;
+        int expType = expr.exp.getType();
+
         //System.err.println("ReturnExp");
-        if ( expr.exp != null )
+        if ( expr.exp != null ) {
             expr.exp.accept( this, level );
+
+            // Get type of expression
+            //System.err.println("Dealing with a return of: " + expr.exp.getClass());
+
+            // If Variable
+            if (expr.exp instanceof absyn.VarExp){
+                NodeType node = nodeExists(expr.exp.toString());
+                expType = node.def.getType();
+            }
+
+            // If Operation (Light check), the operation will print error if not all values are the same, so we just need to print if we find that one value is incorrect
+            else if (expr.exp instanceof absyn.OpExp){
+                if (((OpExp)expr.exp).right instanceof absyn.VarExp){
+                    NodeType node = nodeExists(((OpExp)expr.exp).right.toString());
+                    expType = node.def.getType();
+                } else expType = ((OpExp)expr.exp).right.getType();
+
+            }
+
+            if (funcType != expType)
+                System.err.println("Error in line " + (expr.row + 1) + ", column " + (expr.col + 1) + ": Function Type " + TYPES[((FunctionDec) func.def).result.typ] + " cannot return " + TYPES[expType]);
+        }
+            
     }
 
     public void visit ( SimpleDec dec, int level ) {
