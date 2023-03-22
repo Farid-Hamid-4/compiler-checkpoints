@@ -1,7 +1,10 @@
-/* A program to perform selection sort on an array of
-   10 integers */
+/* This should throw no errors. It uses sort.cm and includes extra function prototypes along with a CallExp with two variables on line 33 */
 
 int x[10];
+
+int x(void);
+void x(void);
+bool x(int u, int v);
 
 int minloc(int a[], int low, int high) {
   int i; 
@@ -21,27 +24,12 @@ int minloc(int a[], int low, int high) {
   return k;
 }
 
-void sort(int a[], int low, int high) {
-  int i; 
-  int k;
-
-  i = low;
-  while (i < high - 1) {
-    int t;
-    k = minloc(a, i, high);
-    t = a[k];
-    a[k] = a[i];
-    a[i] = t;
-    i = i + 1;
-  }
-}
-
 void main(void) {
   int i;
 
   i = 0;
   while (i < 10) {
-    x[i] = input();
+    x[i] = input(a, b);
     i = i + 1;
   }
 

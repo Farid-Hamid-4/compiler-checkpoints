@@ -4,11 +4,7 @@ import java.util.Stack;
 import java.util.Iterator;
 import java.util.ArrayList;
 
-/* TO-DO 
- 1. If a block scope is recognized, but contains no variable declarations. Then an Entering and Leaving a block will be printed with empty content.
- 2. Get the type of the Exp for type checking.
- 3. Look over function undefined() to check if this is a necessary function
-*/
+/* If pushed correctly you will see this message */
 
 public class SemanticAnalyzer implements AbsynVisitor {
 
@@ -157,7 +153,6 @@ public class SemanticAnalyzer implements AbsynVisitor {
             if (node != null)
                 type = ((FunctionDec) node.def).result.typ;
 
-            //System.err.println("CallExp Evaluates to: " + type);
         } else if (exp instanceof VarExp){
             type = varType((VarExp) exp);
         } else type = exp.getType();
@@ -195,7 +190,8 @@ public class SemanticAnalyzer implements AbsynVisitor {
         ExpList expList = (ExpList) exp.args;
         while( params != null && expList != null) {
             int expType = evaluateExp(expList.head);
-            if (params.head.getType() != expType && expType != -1){
+            NodeType head = nodeExists(expList.head.toString());
+            if ((params.head.getType() != expType && expType != -1) || head != null && (head.def instanceof ArrayDec && (head.def.getClass() != params.head.getClass()))){
                 System.err.println("Error in line " + (exp.row + 1) + ", column " + (exp.col + 1) + ": Invalid CallExp makes use of " + TYPES[expType] + " when expected: " + params.head.toString().toUpperCase() + "\n");
                 return -1;
             }
@@ -210,8 +206,8 @@ public class SemanticAnalyzer implements AbsynVisitor {
         return ((FunctionDec) node.def).result.typ;
     }
 
-    public void delete() {
-        /* Delete local scopes from table */
+    public void delete(String name) {
+        symbolTable.remove(name);
     }
 
     public void printSymbolTable( int level ) {
@@ -263,7 +259,8 @@ public class SemanticAnalyzer implements AbsynVisitor {
           varDecList.head.accept( this, level );
           varDecList = varDecList.tail;
         }
-        exp.exps.accept(this, level);
+        if(exp.exps != null)
+            exp.exps.accept(this, level);
     }
 
     public void visit ( DecList decList, int level ) {
@@ -318,9 +315,9 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
 
     public void visit ( IfExp exp, int level ) {
-
-        if (evaluateExp(exp.test) != 0){
-            System.err.println("Error in line " + exp.row + ", column " + exp.col + ": Invalid boolean expression\n");
+        int type = evaluateExp(exp.test);
+        if (type != 0 && type != 1){
+            System.err.println("Error in line " + (exp.row + 1) + ", column " + (exp.col + 1) + ": Invalid test expression\n");
         }
 
         indent( level );
@@ -339,6 +336,8 @@ public class SemanticAnalyzer implements AbsynVisitor {
             
         printSymbolTable( level );
         
+        delete(String.valueOf(nest));
+        nest--;
         stack.pop();
         level--;
             
@@ -350,7 +349,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
         var.index.accept( this, level );
         int indexTyp = evaluateExp(var.index);
         if (indexTyp != 1){
-            System.err.println("Error in line " + var.row + ", column " + var.col + ": Invalid array index of type " + TYPES[indexTyp] + " expected INT\n");
+            System.err.println("Error in line " + (var.row + 1) + ", column " + (var.col + 1) + ": Invalid array index of type " + TYPES[indexTyp] + " expected INT\n");
         }
     }
 
@@ -408,8 +407,9 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
 
     public void visit ( WhileExp exp, int level ) {
-        if (evaluateExp(exp.test) != 0){
-            System.err.println("Error in line " + exp.row + ", column " + exp.col + ": Invalid boolean expression\n");
+        int type = evaluateExp(exp.test);
+        if (type != 0 && type != 1){
+            System.err.println("Error in line " + (exp.row + 1) + ", column " + (exp.col + 1) + ": Invalid test expression\n");
         }
 
         indent( level );
@@ -425,6 +425,8 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
         printSymbolTable( level );
 
+        delete(String.valueOf(nest));
+        nest--;
         stack.pop();
         level--;
         

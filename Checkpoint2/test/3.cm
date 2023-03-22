@@ -1,0 +1,17 @@
+/*
+ 1. Line 11 and 16 produce an undefined function error, since we don't add input() and output() manually to the symbolTable at the very start 
+ 2. Line 12 should produce an invalid assign expression because of incompatible types
+ */
+
+void main(void) {
+  int x;
+  int y[10];
+  bool fac;
+  bool hehe;
+  x = input();
+  fac = 1 * x + 4 / x;
+  while (((x > 1) || (fac)) && (hehe)) {
+    x = x - 1;
+  } 
+  output(y);
+}

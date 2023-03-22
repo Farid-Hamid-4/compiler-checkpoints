@@ -322,7 +322,7 @@ returnStatement   ::= RETURN:r SEMI
                         RESULT = new ReturnExp(rleft, rright, exp);
                      :}
                   | RETURN:r error:e SEMI
-                     {: parser.report_error("Invalid return expression in line " + (rleft + 1) + " at column " + rright + ": missing semicolon.\n", null); 
+                     {: parser.report_error("Invalid return expression in line " + (rleft + 1) + " at column " + (rright + 1) + ": missing semicolon.\n", null); 
                         RESULT = new ReturnExp(rleft, rright, new NilExp(rleft, rright));
                      :}
                   ;

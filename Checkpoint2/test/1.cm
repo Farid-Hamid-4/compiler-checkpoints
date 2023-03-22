@@ -1,14 +1,23 @@
-/* A factorial program that uses a Boolean variable */
+/* A program to compute the factorial value of an integer */
 
-int x;
-int input(int l, int o);
-void foo(void);
+void main(int aa, int bb, bool cc) {
+  int x; 
+  int fac;
 
-int main(void) {
-  int x[10];
-  if ((x > x[1]) && (x == 1)){
-    x = 1 + x;
+  fac = 1;
+  while (x > 1) {
+    int g;
+    int l;
+    int someArray[147];
+    if(x > 1) {
+      int j;
+    }
+    if(x > 1) {
+      int h;
+      int j;
+    }
+    g = l;
+    fac = fac * x;
+    x = x - 1;
   }
-  x[foo()] = 2;
 }
-

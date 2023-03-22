@@ -116,8 +116,10 @@ public class ShowTreeVisitor implements AbsynVisitor {
         indent( level );
         System.out.println( "IfExp:" );
         level++;
-        exp.test.accept( this, level );
-        exp.then.accept( this, level );
+        if (exp.test != null)
+            exp.test.accept( this, level );
+        if ( exp.then != null)
+            exp.then.accept( this, level );
         if ( exp.elsee != null )
            exp.elsee.accept( this, level );
     }
@@ -256,7 +258,8 @@ public class ShowTreeVisitor implements AbsynVisitor {
         indent( level );
         System.out.println( "WhileExp:" );
         level++;
-        exp.test.accept( this, level );
+        if ( exp.test != null )
+            exp.test.accept( this, level );
         exp.body.accept( this, level );
     }
 }
