@@ -2,14 +2,13 @@
 
 int x;
 int input(int l, int o);
+void foo(void);
 
 int main(void) {
-  int y;
-  int l;
-  int h[10];
-  bool f[5];
-  bool g;
-  g = input(y, y);
-  return x+true+y;
+  int x[10];
+  if ((x > x[1]) && (x == 1)){
+    x = 1 + x;
+  }
+  x[foo()] = 2;
 }
 

@@ -2,8 +2,9 @@
    compute the greatest common divisor called gcd */
 
 int gcd(int u, int v) {
+  bool k;
   if (v == 0) return u;
-  else return gcd(v, u - u/v*v);
+  else return gcd(v, u - u/k*v);
 }
 
 void main(void) {

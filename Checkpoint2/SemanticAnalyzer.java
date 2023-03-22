@@ -92,8 +92,9 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
     public boolean isDeclared(String name, String type, int row, int col){
         NodeType node = lookup(name, row, col);
-        if (node == null || node.level == 0)
+        if ((node == null || node.level == 0))
             return false;
+
         System.err.println("Error in line " + row + ", column " + col + ": " + type + " Redeclaration");
         System.err.println(type + " " + name + " has already been declared on line " + (node.def.row + 1) + ", column " + (node.def.col + 1) + "\n");
         return true;
@@ -136,20 +137,20 @@ public class SemanticAnalyzer implements AbsynVisitor {
         if (exp instanceof OpExp){
             int lhsType = evaluateExp(((OpExp) exp).left);
             int rhsType = evaluateExp(((OpExp) exp).right);
-            
-            if (lhsType != rhsType)
-                System.err.println("Error in line " + (exp.row + 1) + ", column " + (exp.col + 1) + " Incompatible types: " + TYPES[lhsType] + " cannot be converted to " + TYPES[rhsType]);
-            else {
-                type = lhsType;
-                if (((OpExp) exp).op < 5){
-                    if (type != 1) {
-                        System.err.println("Error in line " + (exp.row + 1) + ", column " + (exp.col + 1) + " performing arithmetic operation on invalid types: " + TYPES[type]);
-                        return -1;
+            if (!(lhsType == -1 || rhsType == -1))
+                if (lhsType != rhsType)
+                    System.err.println("Error in line " + (exp.row + 1) + ", column " + (exp.col + 1) + " Incompatible types: " + TYPES[lhsType] + " cannot be converted to " + TYPES[rhsType] + "\n");
+                else {
+                    type = lhsType;
+                    if (((OpExp) exp).op < 5){
+                        if (type != 1) {
+                            System.err.println("Error in line " + (exp.row + 1) + ", column " + (exp.col + 1) + " performing arithmetic operation on invalid types: " + TYPES[type] + "\n");
+                            return -1;
+                        }
+                    } else {
+                        type = 0;
                     }
-                } else {
-                    type = 0;
                 }
-            }
         } else if (exp instanceof CallExp){
             NodeType node = funcExists(((CallExp) exp).func);
 
@@ -194,7 +195,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
         ExpList expList = (ExpList) exp.args;
         while( params != null && expList != null) {
             int expType = evaluateExp(expList.head);
-            if (params.head.getType() != expType){
+            if (params.head.getType() != expType && expType != -1){
                 System.err.println("Error in line " + (exp.row + 1) + ", column " + (exp.col + 1) + ": Invalid CallExp makes use of " + TYPES[expType] + " when expected: " + params.head.toString().toUpperCase() + "\n");
                 return -1;
             }
@@ -281,14 +282,22 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
 
     public void visit ( FunctionDec dec, int level ) {
-        if(isDeclared(dec.func, "Function", dec.row+1, dec.col+1)) return;
+        NodeType node = funcExists(dec.func);
+
+        if ((node != null) && (dec.body == null)){
+            System.err.println("Error in line " + (dec.row + 1) + ", column " + (dec.col + 1) + ": Function Redeclaration");
+            System.err.println("Function " + dec.func + " has already been declared on line " + (node.def.row + 1)+ ", column " + (node.def.col + 1) + "\n");
+            return;
+        } else if (node != null && ((FunctionDec) node.def).body == null && (dec.body != null)) {
+            symbolTable.remove(dec.func);
+        }
 
         level++;
         indent( level );
         System.out.println("Entering the scope for function " + dec.func + ":");
         
         insert("global", new NodeType(dec.func, dec, level));
-        
+
         level++;
         stack.add(dec.func);
         
@@ -309,6 +318,11 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
 
     public void visit ( IfExp exp, int level ) {
+
+        if (evaluateExp(exp.test) != 0){
+            System.err.println("Error in line " + exp.row + ", column " + exp.col + ": Invalid boolean expression\n");
+        }
+
         indent( level );
         System.out.println("Entering a new block:");
 
@@ -334,6 +348,10 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
     public void visit ( IndexVar var, int level ) {
         var.index.accept( this, level );
+        int indexTyp = evaluateExp(var.index);
+        if (indexTyp != 1){
+            System.err.println("Error in line " + var.row + ", column " + var.col + ": Invalid array index of type " + TYPES[indexTyp] + " expected INT\n");
+        }
     }
 
     public void visit ( IntExp exp, int level ) {
@@ -354,34 +372,11 @@ public class SemanticAnalyzer implements AbsynVisitor {
         // Get type of function
         NodeType func = symbolTable.get("global").get(symbolTable.get("global").size()-1);
         int funcType = ((FunctionDec) func.def).result.typ;
-        int expType = expr.exp.getType();
+        expr.exp.accept( this, level );
+        int expType = evaluateExp(expr.exp);
 
-        //System.err.println("ReturnExp");
-        if ( expr.exp != null ) {
-            expr.exp.accept( this, level );
-
-            // Get type of expression
-            //System.err.println("Dealing with a return of: " + expr.exp.getClass());
-
-            // If Variable
-            if (expr.exp instanceof absyn.VarExp){
-                NodeType node = nodeExists(expr.exp.toString());
-                expType = node.def.getType();
-            }
-
-            // If Operation (Light check), the operation will print error if not all values are the same, so we just need to print if we find that one value is incorrect
-            else if (expr.exp instanceof absyn.OpExp){
-                if (((OpExp)expr.exp).right instanceof absyn.VarExp){
-                    NodeType node = nodeExists(((OpExp)expr.exp).right.toString());
-                    expType = node.def.getType();
-                } else expType = ((OpExp)expr.exp).right.getType();
-
-            }
-
-            if (funcType != expType)
-                System.err.println("Error in line " + (expr.row + 1) + ", column " + (expr.col + 1) + ": Function Type " + TYPES[((FunctionDec) func.def).result.typ] + " cannot return " + TYPES[expType] + "\n");
-        }
-            
+        if (funcType != expType && expType != -1)
+            System.err.println("Error in line " + (expr.row + 1) + ", column " + (expr.col + 1) + ": Function Type " + TYPES[((FunctionDec) func.def).result.typ] + " cannot return " + TYPES[expType] + "\n");
     }
 
     public void visit ( SimpleDec dec, int level ) {
@@ -413,7 +408,10 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
 
     public void visit ( WhileExp exp, int level ) {
-        //System.err.println("While Exp");
+        if (evaluateExp(exp.test) != 0){
+            System.err.println("Error in line " + exp.row + ", column " + exp.col + ": Invalid boolean expression\n");
+        }
+
         indent( level );
         System.out.println("Entering a new block:");
         
