@@ -8,12 +8,17 @@ class CM {
     
     boolean a_flag = false;
     boolean s_flag = false;
+    boolean c_flag = false;
     
-    for (String s: argv)
-    if(s.equals("-a"))
-    a_flag = true;
-    else if (s.equals("-s"))
-    s_flag = true;
+    for (String s: argv) {
+      if(s.equals("-a"))
+        a_flag = true;
+      if (s.equals("-s"))
+        s_flag = true;
+      if (s.equals("-c"))
+        c_flag = true;
+    }
+    
     
     /* Start the parser */
     try {
@@ -30,14 +35,14 @@ class CM {
         System.setOut(out);
         System.out.println("The abstract syntax tree is:");
         ShowTreeVisitor visitor = new ShowTreeVisitor();
-        result.accept(visitor, 0); 
+        result.accept(visitor, 0, false); 
       }
       if (s_flag && result != null) {
         PrintStream out = new PrintStream(new FileOutputStream("test/" + filename + ".sym"));
         System.setOut(out);
         System.out.println("Entering the global scope:");
         SemanticAnalyzer visitor = new SemanticAnalyzer();
-        result.accept(visitor, 0);
+        result.accept(visitor, 0, false);
         visitor.printSymbolTable(1);
         System.out.println("Leaving the global scope");
       }

@@ -23,7 +23,7 @@ public class FunctionDec extends Dec {
         return null;
     }
 
-    public void accept( AbsynVisitor visitor, int level ) {
-        visitor.visit( this, level );
+    public void accept( AbsynVisitor visitor, int level, boolean flag ) {
+        visitor.visit( this, level, flag );
     }
 }
