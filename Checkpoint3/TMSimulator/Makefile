@@ -10,5 +10,5 @@ tm: tm.c
 	$(CC) $(CFLAGS) tm.c -o tm
 
 clean:
-	-rm -f tm
+	-rm -f tm a.out
 

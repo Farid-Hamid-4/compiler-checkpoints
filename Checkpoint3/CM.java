@@ -37,6 +37,7 @@ class CM {
         ShowTreeVisitor visitor = new ShowTreeVisitor();
         result.accept(visitor, 0, false); 
       }
+
       if (s_flag && result != null) {
         PrintStream out = new PrintStream(new FileOutputStream("test/" + filename + ".sym"));
         System.setOut(out);
@@ -45,6 +46,13 @@ class CM {
         result.accept(visitor, 0, false);
         visitor.printSymbolTable(1);
         System.out.println("Leaving the global scope");
+      }
+
+      if (c_flag && result != null) {
+        PrintStream out = new PrintStream(new FileOutputStream("test/" + filename + ".tm"));
+        System.setOut(out);
+        CodeGenerator visitor = new CodeGenerator();
+        result.accept(visitor, 0, false);
       }
     } catch (Exception e) {
       /* do cleanup here -- possibly rethrow e */

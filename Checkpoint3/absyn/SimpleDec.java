@@ -3,12 +3,16 @@ package absyn;
 public class SimpleDec extends VarDec {
     public NameTy typ;
     public String name;
+    public int nestLevel;
+    public int offset;
 
-    public SimpleDec ( int row, int col, NameTy typ, String name ) {
+    public SimpleDec ( int row, int col, NameTy typ, String name, int nestLevel, int offset ) {
         this.row = row;
         this.col = col;
         this.typ = typ;
         this.name = name;
+        this.nestLevel = nestLevel;
+        this.offset = offset;
     }
 
     public String toString(){

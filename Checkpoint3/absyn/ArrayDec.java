@@ -4,13 +4,17 @@ public class ArrayDec extends VarDec {
     public NameTy typ;
     public String name;
     public int size;
+    public int nestLevel;
+    public int offset;
 
-    public ArrayDec ( int row, int col, NameTy typ, String name, int size ) {
+    public ArrayDec ( int row, int col, NameTy typ, String name, int size, int nestLevel, int offset ) {
         this.row = row;
         this.col = col;
         this.typ = typ;
         this.name = name;
         this.size = size;
+        this.nestLevel = nestLevel;
+        this.offset = offset;
     }
 
     public String toString(){

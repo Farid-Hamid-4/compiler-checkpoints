@@ -5,14 +5,16 @@ public class FunctionDec extends Dec {
     public String func;
     public VarDecList params;
     public Exp body;
+    public int funaddr;
 
-    public FunctionDec ( int row, int col, NameTy result, String func, VarDecList params, Exp body ) {
+    public FunctionDec ( int row, int col, NameTy result, String func, VarDecList params, Exp body, int funaddr ) {
         this.row = row;
         this.col = col;
         this.result = result;
         this.func = func;
         this.params = params;
         this.body = body;
+        this.funaddr = funaddr;
     }
 
     public String toString() {
