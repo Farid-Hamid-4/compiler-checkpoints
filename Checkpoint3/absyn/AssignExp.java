@@ -10,8 +10,12 @@ public class AssignExp extends Exp {
         this.lhs = lhs;
         this.rhs = rhs;
     }
+
+    /* Special case for boolean isAddr */
+    // public AssignExp( int row, int col, VarExp lhs, Exp rhs, boolean isAddr) {  
+    // }
     
-    public void accept( AbsynVisitor visitor, int level ) {
+    public void accept( AbsynVisitor visitor, int level) {
         visitor.visit( this, level );
     }
 
@@ -19,4 +23,5 @@ public class AssignExp extends Exp {
         SimpleVar variable = (SimpleVar) lhs.variable;
         return variable.toString();
     }
+
 }

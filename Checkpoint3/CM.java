@@ -55,7 +55,6 @@ class CM {
         System.out.println("* File: " + filename + ".tm");
         CodeGenerator visitor = new CodeGenerator();
         visitor.visit(result);
-        result.accept(visitor, 0);
       }
     } catch (Exception e) {
       /* do cleanup here -- possibly rethrow e */

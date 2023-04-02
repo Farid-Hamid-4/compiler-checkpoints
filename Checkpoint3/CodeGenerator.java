@@ -74,14 +74,14 @@ public class CodeGenerator implements AbsynVisitor {
         emitRM("ST", AC, 0 , AC, "clear location 0");        
         int savedLoc = emitSkip(1);
 
-        // Input
+        // input
         emitComment("Jump around i/o routines here");
         emitComment("code for input routine");
         emitRM("ST", AC, retOffset, FP, "store return");
         emitOP("IN", 0, 0, 0, "input");
         emitRM("LD", PC, retOffset, FP, "return to caller");
 
-        // Output
+        // output
         emitComment("code for output routine");
         emitRM("ST", AC, retOffset, FP, "store return");
         emitRM("LD", AC, initialOffset, FP, "load output value");
@@ -118,21 +118,37 @@ public class CodeGenerator implements AbsynVisitor {
     }
 
     public void visit ( CallExp exp, int offset ) {
+        emitComment("-> call");
+        emitComment("<- call");
     }
 
     public void visit ( CompoundExp exp, int offset ) {
+        emitComment("-> compound statement");
+        emitComment("<- compound statement");
     }
 
     public void visit ( DecList decList, int offset ) {
+        while ( decList != null && decList.head != null) {
+            decList.head.accept( this, offset );
+            decList = decList.tail;
+        }
     }
 
     public void visit ( ExpList expList, int offset ) {
+        while( expList != null ) {
+            expList.head.accept( this, offset );
+            expList = expList.tail;
+        }
     }
 
-    public void visit ( FunctionDec dec, int offset ) {   
+    public void visit ( FunctionDec dec, int offset ) {
+        emitComment("processing function: " + dec.func);
+        emitComment("jump around function body here");
     }
-
+    
     public void visit ( IfExp exp, int offset ) {
+        emitComment("-> if");
+        emitComment("<- if");
     }
 
     public void visit ( IndexVar var, int offset ) {
@@ -148,23 +164,34 @@ public class CodeGenerator implements AbsynVisitor {
     }
 
     public void visit ( OpExp exp, int offset ) {
+        emitComment("-> op");
+        emitComment("<- op");
     }
 
     public void visit ( ReturnExp expr, int offset ) {
+        emitComment("-> return");
+        emitComment("<- return");
     }
 
     public void visit ( SimpleDec dec, int offset ) {
+        emitComment("<- vardecl");
     }
 
     public void visit ( SimpleVar var, int offset ) {
     }
 
     public void visit ( VarDecList varDecList, int offset ) {
+        while( varDecList != null ) {
+            varDecList.head.accept( this, offset );
+            varDecList = varDecList.tail;
+        } 
     }
 
     public void visit ( VarExp exp, int offset ) {
     }
 
     public void visit ( WhileExp exp, int offset ) {
+        emitComment("-> while");
+        emitComment("<- while");
     }
 }

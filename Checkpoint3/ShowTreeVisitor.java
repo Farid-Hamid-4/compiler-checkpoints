@@ -233,7 +233,7 @@ public class ShowTreeVisitor implements AbsynVisitor {
         while( varDecList != null ) {
             varDecList.head.accept( this, level );
             varDecList = varDecList.tail;
-        } 
+        }
     }
 
     public void visit ( VarExp exp, int level ) {
