@@ -3,16 +3,17 @@ package absyn;
 public class SimpleDec extends VarDec {
     public NameTy typ;
     public String name;
-    public int nestLevel;
-    public int offset;
+    // public int nestLevel;
+    // public int offset;
 
-    public SimpleDec ( int row, int col, NameTy typ, String name, int nestLevel, int offset ) {
+    // public SimpleDec ( int row, int col, NameTy typ, String name, int nestLevel, int offset ) {
+    public SimpleDec ( int row, int col, NameTy typ, String name ) {
         this.row = row;
         this.col = col;
         this.typ = typ;
         this.name = name;
-        this.nestLevel = nestLevel;
-        this.offset = offset;
+        // this.nestLevel = nestLevel;
+        // this.offset = offset;
     }
 
     public String toString(){
@@ -26,7 +27,7 @@ public class SimpleDec extends VarDec {
         return typ.typ;
     }
 
-    public void accept( AbsynVisitor visitor, int level, boolean flag ) {
-        visitor.visit( this, level, flag );
+    public void accept( AbsynVisitor visitor, int level ) {
+        visitor.visit( this, level );
     }
 }

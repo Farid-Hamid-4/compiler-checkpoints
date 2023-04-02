@@ -9,7 +9,7 @@ public class ReturnExp extends Exp {
         this.exp = exp;
     }
 
-    public void accept( AbsynVisitor visitor, int level, boolean flag ) {
-        visitor.visit( this, level, flag );
+    public void accept( AbsynVisitor visitor, int level ) {
+        visitor.visit( this, level );
     }
 }

@@ -14,7 +14,7 @@ public class NameTy extends Absyn {
         this.typ = typ;
     }
 
-    public void accept( AbsynVisitor visitor, int level, boolean flag ) {
-        visitor.visit( this, level, flag );
+    public void accept( AbsynVisitor visitor, int level ) {
+        visitor.visit( this, level );
     }
 }

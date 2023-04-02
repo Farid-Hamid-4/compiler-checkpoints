@@ -35,7 +35,7 @@ class CM {
         System.setOut(out);
         System.out.println("The abstract syntax tree is:");
         ShowTreeVisitor visitor = new ShowTreeVisitor();
-        result.accept(visitor, 0, false); 
+        result.accept(visitor, 0); 
       }
 
       if (s_flag && result != null) {
@@ -43,7 +43,7 @@ class CM {
         System.setOut(out);
         System.out.println("Entering the global scope:");
         SemanticAnalyzer visitor = new SemanticAnalyzer();
-        result.accept(visitor, 0, false);
+        result.accept(visitor, 0);
         visitor.printSymbolTable(1);
         System.out.println("Leaving the global scope");
       }
@@ -51,8 +51,11 @@ class CM {
       if (c_flag && result != null) {
         PrintStream out = new PrintStream(new FileOutputStream("test/" + filename + ".tm"));
         System.setOut(out);
+        System.out.println("* C-Minus Compilation to TM Code");
+        System.out.println("* File: " + filename + ".tm");
         CodeGenerator visitor = new CodeGenerator();
-        result.accept(visitor, 0, false);
+        visitor.visit(result);
+        result.accept(visitor, 0);
       }
     } catch (Exception e) {
       /* do cleanup here -- possibly rethrow e */

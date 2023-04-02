@@ -5,16 +5,17 @@ public class FunctionDec extends Dec {
     public String func;
     public VarDecList params;
     public Exp body;
-    public int funaddr;
+    // public int funaddr;
 
-    public FunctionDec ( int row, int col, NameTy result, String func, VarDecList params, Exp body, int funaddr ) {
+    // public FunctionDec ( int row, int col, NameTy result, String func, VarDecList params, Exp body, int funaddr ) {
+    public FunctionDec ( int row, int col, NameTy result, String func, VarDecList params, Exp body ) {
         this.row = row;
         this.col = col;
         this.result = result;
         this.func = func;
         this.params = params;
         this.body = body;
-        this.funaddr = funaddr;
+        // this.funaddr = funaddr;
     }
 
     public String toString() {
@@ -25,7 +26,7 @@ public class FunctionDec extends Dec {
         return null;
     }
 
-    public void accept( AbsynVisitor visitor, int level, boolean flag ) {
-        visitor.visit( this, level, flag );
+    public void accept( AbsynVisitor visitor, int level ) {
+        visitor.visit( this, level );
     }
 }

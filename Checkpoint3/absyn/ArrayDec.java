@@ -4,17 +4,18 @@ public class ArrayDec extends VarDec {
     public NameTy typ;
     public String name;
     public int size;
-    public int nestLevel;
-    public int offset;
+    // public int nestLevel;
+    // public int offset;
 
-    public ArrayDec ( int row, int col, NameTy typ, String name, int size, int nestLevel, int offset ) {
+    // public ArrayDec ( int row, int col, NameTy typ, String name, int size, int nestLevel, int offset ) {
+    public ArrayDec ( int row, int col, NameTy typ, String name, int size ) {
         this.row = row;
         this.col = col;
         this.typ = typ;
         this.name = name;
         this.size = size;
-        this.nestLevel = nestLevel;
-        this.offset = offset;
+        // this.nestLevel = nestLevel;
+        // this.offset = offset;
     }
 
     public String toString(){
@@ -36,7 +37,7 @@ public class ArrayDec extends VarDec {
         return typ.typ;
     }
 
-    public void accept( AbsynVisitor visitor, int level, boolean flag ) {
-        visitor.visit( this, level, flag );
+    public void accept( AbsynVisitor visitor, int level ) {
+        visitor.visit( this, level );
     }
 }
