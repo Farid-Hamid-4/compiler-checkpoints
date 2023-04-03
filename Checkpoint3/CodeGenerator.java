@@ -2,6 +2,7 @@ import absyn.*;
 
 public class CodeGenerator implements AbsynVisitor {
 
+    /* Offsets */
     public int mainEntry = 0;
     public int globalOffset = 0;
     public static int emitLoc = 0;
@@ -96,7 +97,7 @@ public class CodeGenerator implements AbsynVisitor {
         emitComment("End of standard prelude.");
 
         // make a request to the visit method for DecList
-        trees.accept( this, 0 );
+        trees.accept( this, 0, false );
 
         // generate finale
         emitRM( "ST", FP, globalOffset, FP, "push ofp" );
@@ -108,90 +109,127 @@ public class CodeGenerator implements AbsynVisitor {
         emitRO( "HALT", 0, 0, 0, "");
     }
 
-    public void visit( ArrayDec dec, int offset ) {
+    public void visit( ArrayDec dec, int offset, boolean isGlobal ) {
+        if(isGlobal) {
+            emitComment("allocating global var: " + dec.name);
+            emitComment("<- vardecl");
+            emitLoc++;
+        } else {
+            emitComment("processing local var: " + dec.name);
+        }
     }
 
-    public void visit ( AssignExp exp, int offset ) {
+    public void visit ( AssignExp exp, int offset, boolean isAddr ) {
+        emitComment("-> op");
+
+        exp.lhs.accept(this, offset, true);
+        emitRM("ST", AC, offset, FP, "op: push left");
+        
+        exp.rhs.accept(this, offset, false);
+
+        emitComment("<- op");
     }
 
-    public void visit ( BoolExp exp, int offset ) {
+    public void visit ( BoolExp exp, int offset, boolean isAddr ) {
     }
 
-    public void visit ( CallExp exp, int offset ) {
+    public void visit ( CallExp exp, int offset, boolean isAddr ) {
         emitComment("-> call");
         emitComment("<- call");
     }
 
-    public void visit ( CompoundExp exp, int offset ) {
+    public void visit ( CompoundExp exp, int offset, boolean isAddr ) {
         emitComment("-> compound statement");
+        visit(exp.decs, offset, false);
+        visit(exp.exps, offset, false);
         emitComment("<- compound statement");
     }
 
-    public void visit ( DecList decList, int offset ) {
+    public void visit ( DecList decList, int offset, boolean isAddr ) {
         while ( decList != null && decList.head != null) {
-            decList.head.accept( this, offset );
+            decList.head.accept( this, offset, true );
             decList = decList.tail;
         }
     }
 
-    public void visit ( ExpList expList, int offset ) {
+    public void visit ( ExpList expList, int offset, boolean isAddr ) {
         while( expList != null ) {
-            expList.head.accept( this, offset );
+            expList.head.accept( this, offset, false );
             expList = expList.tail;
         }
     }
 
-    public void visit ( FunctionDec dec, int offset ) {
+    public void visit ( FunctionDec dec, int offset, boolean isAddr ) {
         emitComment("processing function: " + dec.func);
         emitComment("jump around function body here");
+
+        emitRM("ST", AC, retOffset, FP, "store return");
+
+        /* Go to CompoundExp */
+        dec.body.accept(this, offset, false);
     }
     
-    public void visit ( IfExp exp, int offset ) {
+    public void visit ( IfExp exp, int offset, boolean isAddr ) {
         emitComment("-> if");
         emitComment("<- if");
     }
 
-    public void visit ( IndexVar var, int offset ) {
+    public void visit ( IndexVar var, int offset, boolean isAddr ) {
     }
     
-    public void visit ( IntExp exp, int offset ) {
+    public void visit ( IntExp exp, int offset, boolean isAddr ) {
     }
 
-    public void visit ( NameTy type, int offset ) {
+    public void visit ( NameTy type, int offset, boolean isAddr ) {
     }
     
-    public void visit ( NilExp exp, int offset ) {
+    public void visit ( NilExp exp, int offset, boolean isAddr ) {
     }
 
-    public void visit ( OpExp exp, int offset ) {
+    public void visit ( OpExp exp, int offset, boolean isAddr ) {
         emitComment("-> op");
+        exp.left.accept(this, offset, false);
         emitComment("<- op");
     }
 
-    public void visit ( ReturnExp expr, int offset ) {
+    public void visit ( ReturnExp expr, int offset, boolean isAddr ) {
         emitComment("-> return");
         emitComment("<- return");
     }
 
-    public void visit ( SimpleDec dec, int offset ) {
-        emitComment("<- vardecl");
+    public void visit ( SimpleDec dec, int offset, boolean isGlobal ) {
+        if(isGlobal) {
+            emitComment("allocating global var: " + dec.name);
+            emitComment("<- vardecl");
+            emitLoc++;
+        } else {
+            emitComment("processing local var: " + dec.name);
+        }
     }
 
-    public void visit ( SimpleVar var, int offset ) {
+    public void visit ( SimpleVar var, int offset, boolean isAddr ) {
     }
 
-    public void visit ( VarDecList varDecList, int offset ) {
+    public void visit ( VarDecList varDecList, int offset, boolean isAddr ) {
         while( varDecList != null ) {
-            varDecList.head.accept( this, offset );
+            varDecList.head.accept( this, offset, false );
             varDecList = varDecList.tail;
-        } 
+        }
     }
 
-    public void visit ( VarExp exp, int offset ) {
+    public void visit ( VarExp exp, int offset, boolean isAddr ) {
+        emitComment("-> id");
+        emitComment("looking up id: " + exp.toString());
+
+        /* Need to check if the variable is defined locally or globally. If local use emitRM with GP otherwise use FP. Use LDA if the variable is defined in the body, otherwise use LD if the variable is defined as an argument in the params */
+
+        emitComment("<- id");
     }
 
-    public void visit ( WhileExp exp, int offset ) {
+    public void visit ( WhileExp exp, int offset, boolean isAddr ) {
         emitComment("-> while");
+        emitComment("while: jump after body comes back here");
+        exp.test.accept(this, offset, false);
         emitComment("<- while");
     }
 }

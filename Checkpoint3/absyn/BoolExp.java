@@ -14,7 +14,7 @@ public class BoolExp extends Exp {
         return type;
     }
     
-    public void accept( AbsynVisitor visitor, int level ) {
-        visitor.visit( this, level );
+    public void accept( AbsynVisitor visitor, int level, boolean flag ) {
+        visitor.visit( this, level, flag );
     }
 }

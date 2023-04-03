@@ -15,8 +15,8 @@ public class AssignExp extends Exp {
     // public AssignExp( int row, int col, VarExp lhs, Exp rhs, boolean isAddr) {  
     // }
     
-    public void accept( AbsynVisitor visitor, int level) {
-        visitor.visit( this, level );
+    public void accept( AbsynVisitor visitor, int level, boolean flag ) {
+        visitor.visit( this, level, flag );
     }
 
     public String VarType() {

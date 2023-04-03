@@ -19,7 +19,6 @@ class CM {
         c_flag = true;
     }
     
-    
     /* Start the parser */
     try {
       parser p = new parser(new Lexer(new FileReader(argv[0])));
@@ -35,7 +34,7 @@ class CM {
         System.setOut(out);
         System.out.println("The abstract syntax tree is:");
         ShowTreeVisitor visitor = new ShowTreeVisitor();
-        result.accept(visitor, 0); 
+        result.accept(visitor, 0, false); 
       }
 
       if (s_flag && result != null) {
@@ -43,7 +42,7 @@ class CM {
         System.setOut(out);
         System.out.println("Entering the global scope:");
         SemanticAnalyzer visitor = new SemanticAnalyzer();
-        result.accept(visitor, 0);
+        result.accept(visitor, 0, false);
         visitor.printSymbolTable(1);
         System.out.println("Leaving the global scope");
       }
