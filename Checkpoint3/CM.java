@@ -48,6 +48,7 @@ class CM {
       }
 
       if (c_flag && result != null) {
+        /* Need to verify that SemanticAnalyzer produces without errors before running CodeGenerator */
         PrintStream out = new PrintStream(new FileOutputStream("test/" + filename + ".tm"));
         System.setOut(out);
         System.out.println("* C-Minus Compilation to TM Code");

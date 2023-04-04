@@ -1,6 +1,9 @@
 import absyn.*;
+import java.util.HashMap;
 
 public class CodeGenerator implements AbsynVisitor {
+
+    public HashMap<String, Integer> framePtr = new HashMap<String, Integer>();
 
     /* Offsets */
     public int mainEntry = 0;
@@ -116,11 +119,19 @@ public class CodeGenerator implements AbsynVisitor {
             emitLoc++;
         } else {
             emitComment("processing local var: " + dec.name);
+            framePtr.put(dec.name, offset);
         }
     }
 
     public void visit ( AssignExp exp, int offset, boolean isAddr ) {
         emitComment("-> op");
+        if(!framePtr.containsKey("op: push left")){
+            framePtr.put("op: push left", globalOffset);
+            offset--;
+            globalOffset--;
+        } else {
+            offset = framePtr.get("op: push left");
+        }
 
         exp.lhs.accept(this, offset, true);
         emitRM("ST", AC, offset, FP, "op: push left");
@@ -164,8 +175,21 @@ public class CodeGenerator implements AbsynVisitor {
         emitComment("jump around function body here");
 
         emitRM("ST", AC, retOffset, FP, "store return");
+        offset = initialOffset;
 
-        /* Go to CompoundExp */
+        VarDecList params = dec.params;
+        while(params != null) {
+            if (params.head instanceof SimpleDec){
+                framePtr.put(((SimpleDec)params.head).name, offset);
+            }
+            else if (params.head instanceof ArrayDec){
+                framePtr.put(((ArrayDec)params.head).name, offset);
+            }
+            offset--;
+            params = params.tail;
+        }
+
+        globalOffset = offset;
         dec.body.accept(this, offset, false);
     }
     
@@ -175,6 +199,11 @@ public class CodeGenerator implements AbsynVisitor {
     }
 
     public void visit ( IndexVar var, int offset, boolean isAddr ) {
+        offset = framePtr.get(var.name);
+        emitRM("LDA", AC, offset, FP, "load id address");
+        emitRM("ST", AC, globalOffset, FP, "store array addr");
+        globalOffset--;
+        var.index.accept(this, globalOffset, false);
     }
     
     public void visit ( IntExp exp, int offset, boolean isAddr ) {
@@ -204,15 +233,20 @@ public class CodeGenerator implements AbsynVisitor {
             emitLoc++;
         } else {
             emitComment("processing local var: " + dec.name);
+            framePtr.put(dec.name, offset);
         }
     }
 
     public void visit ( SimpleVar var, int offset, boolean isAddr ) {
+        offset = framePtr.get(var.name);
+        emitRM("LDA", AC, offset, FP, "load id address");
     }
 
     public void visit ( VarDecList varDecList, int offset, boolean isAddr ) {
         while( varDecList != null ) {
             varDecList.head.accept( this, offset, false );
+            offset--;
+            globalOffset--;
             varDecList = varDecList.tail;
         }
     }
@@ -220,6 +254,8 @@ public class CodeGenerator implements AbsynVisitor {
     public void visit ( VarExp exp, int offset, boolean isAddr ) {
         emitComment("-> id");
         emitComment("looking up id: " + exp.toString());
+        
+        exp.variable.accept(this, offset, false);
 
         /* Need to check if the variable is defined locally or globally. If local use emitRM with GP otherwise use FP. Use LDA if the variable is defined in the body, otherwise use LD if the variable is defined as an argument in the params */
 
