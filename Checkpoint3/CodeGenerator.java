@@ -1,5 +1,6 @@
 import absyn.*;
 import java.util.HashMap;
+import java.util.function.Function;
 
 public class CodeGenerator implements AbsynVisitor {
 
@@ -9,6 +10,7 @@ public class CodeGenerator implements AbsynVisitor {
     public int mainEntry = 0;
     public int globalOffset = 0;
     public int currentOffset = 0;
+    public int funLoc = 0;
     public static int emitLoc = 0;
     public static int highEmitLoc = 0;
     public static final int retOffset = -1;
@@ -102,16 +104,15 @@ public class CodeGenerator implements AbsynVisitor {
         emitRestore();
         emitComment("End of standard prelude.");
 
-        emitSkip(1);
 
         // make a request to the visit method for DecList
         trees.accept( this, 0, false );
 
         // generate finale
-        emitRM( "ST", FP, globalOffset, FP, "push ofp" );
-        emitRM( "LDA", FP, globalOffset, FP, "push frame" );
+        emitRM( "ST", FP, 0, FP, "push ofp" );
+        emitRM( "LDA", FP, 0, FP, "push frame" );
         emitRM( "LDA", AC, 1, PC, "load ac with ret ptr" );
-        emitRM_Abs( "LDA", PC, mainEntry, "jump to main loc" );
+        emitRM_Abs( "LDA", PC, mainEntry+1, "jump to main loc" );
         emitRM( "LD", FP,  0, FP, "pop frame" );
         emitComment("End of execution.");
         emitRO( "HALT", 0, 0, 0, "");
@@ -121,7 +122,6 @@ public class CodeGenerator implements AbsynVisitor {
         if(isGlobal) {
             emitComment("allocating global var: " + dec.name);
             emitComment("<- vardecl");
-            emitLoc++;
         } else {
             emitComment("processing local var: " + dec.name);
             framePtr.put(dec.name, offset);
@@ -153,16 +153,16 @@ public class CodeGenerator implements AbsynVisitor {
 
     public void visit ( CallExp exp, int offset, boolean isAddr ) {
         emitComment("-> call of function: " + exp.func);
-
-        if (exp.args != null)
+        int functionLoc = -emitLoc;
+        if (exp.args != null){
             exp.args.accept( this, offset, false );
-
+            emitRM("ST", AC, offset + initialOffset, FP, "store arg val");
+        }
         emitRM("ST", FP, offset, FP, "push ofp");
-        int functionLoc = -emitLoc + 1;
         emitRM("LDA", FP, offset, FP, "push frame");
         emitRM("LDA", AC, 1, PC, "load ac with ret ptr");
         emitRM("LDA", PC, functionLoc, FP, "jump to fun loc");
-        emitRM("LD", FP, mainEntry, FP, "pop frame");
+        emitRM("LD", FP, 0, FP, "pop frame");
 
         emitComment("<- call");
     }
@@ -179,6 +179,7 @@ public class CodeGenerator implements AbsynVisitor {
     public void visit ( DecList decList, int offset, boolean isAddr ) {
         while ( decList != null && decList.head != null) {
             // VarDecList or Function Dec
+            globalOffset--;
             decList.head.accept( this, offset, true );
             decList = decList.tail;
         }
@@ -195,21 +196,27 @@ public class CodeGenerator implements AbsynVisitor {
         while( expList != null ) {
             if (expList.head instanceof OpExp) offset = framePtr.get("op");
             expList.head.accept( this, offset, false );
-            offset--;
             currentOffset--;
             expList = expList.tail;
         }  
     }
 
     public void visit ( FunctionDec dec, int offset, boolean isAddr ) {
+
         // Comes from Global DecList
         emitComment("processing function: " + dec.func);
         emitComment("jump around function body here");
+        
+        if (dec.func.equals("main")) {
+            mainEntry = emitLoc;
+        }
+        int savedLoc = emitSkip(1);
+
 
         emitRM("ST", AC, retOffset, FP, "store return");
 
         // offset here is -2 typically
-        offset = globalOffset + initialOffset;
+        offset = initialOffset;
         
         VarDecList params = dec.params;
 
@@ -229,6 +236,13 @@ public class CodeGenerator implements AbsynVisitor {
 
         // Goes to CompundExp typically
         dec.body.accept(this, offset, false);
+
+        int savedLoc2 = emitSkip(0);
+        emitRM("LD", PC, globalOffset, FP, "return to caller");
+        emitBackup(savedLoc);
+        emitRM("LDA", PC, savedLoc2 - savedLoc, PC, "jump around fn body");
+        emitComment("<- fundecl");
+        emitRestore();
     }
     
     public void visit ( IfExp exp, int offset, boolean isAddr ) {
@@ -290,7 +304,6 @@ public class CodeGenerator implements AbsynVisitor {
         if(isGlobal) {
             emitComment("allocating global var: " + dec.name);
             emitComment("<- vardecl");
-            emitLoc++;
         } else {
             emitComment("processing local var: " + dec.name);
             framePtr.put(dec.name, offset);
@@ -328,11 +341,15 @@ public class CodeGenerator implements AbsynVisitor {
         offset = framePtr.get("op");
         exp.test.accept(this, offset, false);
         emitComment("while: jump to end belongs here");
+
         int savedLoc = emitSkip(1);
         exp.body.accept(this, offset, false);
+        int savedLoc2 = emitLoc;
 
         emitRM("LDA", PC, -savedLoc - (currentOffset - initialOffset), PC, "while: absolute jmp to test");
-        emitRM("JEQ", AC, 0, PC, "while: jmp to end");
+        emitBackup(savedLoc);
+        emitRM("JEQ", AC, savedLoc2 - savedLoc, PC, "while: jmp to end");
+        emitRestore();
         emitComment("<- while");
     }
 }
