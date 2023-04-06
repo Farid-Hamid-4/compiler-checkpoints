@@ -147,7 +147,7 @@ public class CodeGenerator implements AbsynVisitor {
 
     public void visit ( BoolExp exp, int offset, boolean isAddr ) {
         emitComment("-> constant");
-        emitRM("LDC", AC, 0, 0, "load const");
+        emitRM("LDC", AC, 1, 0, "load const");
         emitComment("<- constant");
     }
 
@@ -294,7 +294,7 @@ public class CodeGenerator implements AbsynVisitor {
     
     public void visit ( IntExp exp, int offset, boolean isAddr ) {
         emitComment("-> constant");
-        emitRM("LDC", AC, 0, 0, "load const");
+        emitRM("LDC", AC, 1, 0, "load const");
         emitComment("<- constant");
     }
 
